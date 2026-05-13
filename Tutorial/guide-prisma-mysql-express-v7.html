@@ -1,0 +1,2543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Guide Prisma ORM v7 · MySQL · Express — TypeScript ESM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;600&family=Figtree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ── */
+:root {
+  --bg:       #06080e;
+  --surface:  #0c1018;
+  --surface2: #111820;
+  --surface3: #161e28;
+  --border:   #1c2736;
+  --border2:  #243040;
+  --text:     #d8eaf8;
+  --muted:    #556f8a;
+  --muted2:   #354e65;
+
+  --accent:  #3b9eff;
+  --green:   #22d98a;
+  --yellow:  #f5c842;
+  --red:     #f2546a;
+  --purple:  #a87fff;
+  --orange:  #ff8c5a;
+  --teal:    #22d4c8;
+
+  --font-serif: 'Instrument Serif', Georgia, serif;
+  --font-body:  'Figtree', sans-serif;
+  --font-mono:  'JetBrains Mono', monospace;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.7;
+  min-height: 100vh;
+}
+
+/* ── LAYOUT ── */
+.layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  min-height: 100vh;
+}
+
+/* ═══════════════════════════════════
+   SIDEBAR
+═══════════════════════════════════ */
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+
+.sidebar-top {
+  padding: 24px 20px 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.version-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 3px 8px;
+  border-radius: 20px;
+  background: rgba(59,158,255,0.12);
+  color: var(--accent);
+  border: 1px solid rgba(59,158,255,0.25);
+  margin-bottom: 12px;
+}
+
+.version-pill::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%,100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.sidebar-logo {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+
+.sidebar-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+}
+
+.nav-group {
+  padding: 16px 0 4px;
+}
+
+.nav-group-label {
+  font-family: var(--font-mono);
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: var(--muted2);
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 0 20px 8px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 20px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 400;
+  border-left: 2px solid transparent;
+  transition: all 0.12s;
+  cursor: pointer;
+}
+
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,0.025); border-left-color: var(--border2); }
+.nav-item.active { color: var(--accent); border-left-color: var(--accent); background: rgba(59,158,255,0.05); font-weight: 500; }
+
+.nav-step {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  color: var(--muted2);
+  min-width: 18px;
+}
+
+.nav-source {
+  padding: 14px 20px;
+  margin: 8px 12px 0;
+  background: rgba(34,217,138,0.05);
+  border: 1px solid rgba(34,217,138,0.15);
+  border-radius: var(--r-md);
+  font-size: 0.72rem;
+  color: #4aab7e;
+  line-height: 1.5;
+}
+
+.nav-source a { color: var(--green); text-decoration: none; }
+.nav-source a:hover { text-decoration: underline; }
+
+/* ═══════════════════════════════════
+   MAIN
+═══════════════════════════════════ */
+.main { overflow-x: hidden; }
+
+/* ── HERO ── */
+.hero {
+  padding: 72px 72px 60px;
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+  background: radial-gradient(ellipse 80% 60% at 70% -20%, rgba(59,158,255,0.06) 0%, transparent 60%),
+              radial-gradient(ellipse 50% 40% at 20% 110%, rgba(34,217,138,0.04) 0%, transparent 60%);
+}
+
+.hero-doc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(34,217,138,0.08);
+  color: var(--green);
+  border: 1px solid rgba(34,217,138,0.2);
+  margin-bottom: 20px;
+}
+
+.hero-title {
+  font-family: var(--font-serif);
+  font-size: 3rem;
+  font-weight: 400;
+  line-height: 1.05;
+  color: #fff;
+  margin-bottom: 10px;
+}
+
+.hero-title em { font-style: italic; color: var(--accent); }
+
+.hero-desc {
+  font-size: 0.95rem;
+  color: var(--muted);
+  max-width: 520px;
+  line-height: 1.8;
+  margin-bottom: 30px;
+}
+
+.hero-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--text);
+}
+
+.pill-dot { width: 6px; height: 6px; border-radius: 50%; }
+
+/* ── CONTENT ── */
+.content { max-width: 820px; padding: 56px 72px; }
+
+/* ── STEP SECTION ── */
+.step-section {
+  margin-bottom: 72px;
+  scroll-margin-top: 24px;
+}
+
+.step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.step-badge {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.step-num {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(59,158,255,0.1);
+  border: 1px solid rgba(59,158,255,0.2);
+  border-radius: var(--r-sm);
+  padding: 3px 7px;
+  letter-spacing: 0.05em;
+}
+
+.step-title {
+  font-family: var(--font-serif);
+  font-size: 1.55rem;
+  font-weight: 400;
+  color: #fff;
+  line-height: 1.15;
+}
+
+.step-subtitle {
+  font-size: 0.8rem;
+  color: var(--muted);
+  margin-top: 5px;
+}
+
+/* ── PROSE ── */
+p.prose {
+  font-size: 0.88rem;
+  color: #8fb0cc;
+  line-height: 1.85;
+  margin-bottom: 16px;
+}
+
+p.prose strong { color: var(--text); font-weight: 600; }
+p.prose code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--accent);
+  background: rgba(59,158,255,0.08);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(59,158,255,0.15);
+}
+p.prose a { color: var(--accent); text-decoration: none; }
+p.prose a:hover { text-decoration: underline; }
+
+h3.sub {
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #b0cde8;
+  margin: 28px 0 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+/* ── CODE FILE ── */
+.cf {
+  border: 1px solid var(--border2);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin: 14px 0;
+}
+
+.cf-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  gap: 12px;
+}
+
+.cf-name {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  flex: 1;
+}
+
+.lt {
+  font-family: var(--font-mono);
+  font-size: 0.58rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.lt-bash   { background: rgba(34,217,138,0.1);  color: var(--green); }
+.lt-ts     { background: rgba(59,158,255,0.1);  color: var(--accent); }
+.lt-prisma { background: rgba(34,212,200,0.1);  color: var(--teal); }
+.lt-env    { background: rgba(165,127,255,0.1); color: var(--purple); }
+.lt-json   { background: rgba(255,140,90,0.1);  color: var(--orange); }
+.lt-sql    { background: rgba(242,84,106,0.1);  color: var(--red); }
+
+.copy-btn {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  padding: 3px 8px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.12s;
+  flex-shrink: 0;
+}
+.copy-btn:hover { color: var(--text); background: var(--surface3); }
+.copy-btn.ok { color: var(--green); border-color: rgba(34,217,138,0.3); }
+
+pre.code-block {
+  background: #030608;
+  padding: 20px;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.75;
+  color: #7ba8c8;
+  display: block;
+}
+
+/* Syntax tokens */
+.kw  { color: #b57bff; }
+.str { color: #98c379; }
+.cmt { color: #3d5870; font-style: italic; }
+.num { color: #f78c6c; }
+.fn  { color: #61afef; }
+.typ { color: #e5c07b; }
+.prp { color: #e06c75; }
+.ann { color: #9ec4e0; }
+.op  { color: #56b6c2; }
+.var { color: #eff; }
+.hl  { background: rgba(59,158,255,0.07); display: block; margin: 0 -20px; padding: 0 20px; }
+
+/* ── CALLOUT ── */
+.callout {
+  display: flex;
+  gap: 12px;
+  padding: 13px 16px;
+  border-radius: var(--r-md);
+  margin: 14px 0;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+.callout-ico { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+.ci  { background: rgba(59,158,255,0.06);  border: 1px solid rgba(59,158,255,0.18);  color: #7fb8e8; }
+.cw  { background: rgba(245,200,66,0.06);  border: 1px solid rgba(245,200,66,0.2);   color: #c4a84a; }
+.cs  { background: rgba(34,217,138,0.06);  border: 1px solid rgba(34,217,138,0.18);  color: #4aab7e; }
+.cd  { background: rgba(242,84,106,0.06);  border: 1px solid rgba(242,84,106,0.18);  color: #c06070; }
+.callout strong { color: #fff; }
+
+/* ── EXPLAIN ── */
+.explain {
+  border: 1px solid var(--border2);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  margin: 16px 0;
+}
+
+.explain-header {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 11px 16px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.77rem;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.explain-icon { font-size: 0.9rem; }
+.explain-arrow {
+  margin-left: auto;
+  font-size: 0.7rem;
+  color: var(--muted2);
+  transition: transform 0.2s;
+}
+.explain[open] .explain-arrow { transform: rotate(180deg); }
+
+.explain-body {
+  padding: 14px 16px;
+  font-size: 0.83rem;
+  line-height: 1.75;
+  color: #8fb0cc;
+  background: var(--surface);
+}
+
+.explain-body strong { color: var(--text); }
+.explain-body code {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  color: var(--accent);
+  background: rgba(59,158,255,0.07);
+  padding: 1px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(59,158,255,0.15);
+}
+.explain-body ul { padding-left: 18px; margin-top: 8px; }
+.explain-body li { margin-bottom: 5px; }
+.explain-body .hl-line {
+  display: flex;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  margin-top: 8px;
+  background: rgba(59,158,255,0.04);
+  border: 1px solid rgba(59,158,255,0.1);
+  font-family: var(--font-mono);
+  font-size: 0.78em;
+  align-items: flex-start;
+}
+.hl-line-num { color: var(--accent); font-weight: 700; flex-shrink: 0; }
+.hl-line-desc { color: #8fb0cc; }
+
+/* ── TABLE ── */
+.tbl-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  margin: 14px 0;
+}
+
+table { width: 100%; border-collapse: collapse; }
+th {
+  background: var(--surface2);
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 9px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+td {
+  padding: 9px 14px;
+  font-size: 0.81rem;
+  color: #8fb0cc;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tr:last-child td { border-bottom: none; }
+td code {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  color: var(--accent);
+  background: rgba(59,158,255,0.06);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+/* ── SCHEMA VISUAL ── */
+.schema-cards {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.sc {
+  flex: 1;
+  min-width: 160px;
+  border: 1px solid var(--border);
+  border-radius: var(--r-lg);
+  overflow: hidden;
+  background: var(--surface);
+}
+.sc-head {
+  padding: 8px 13px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--teal);
+  border-bottom: 1px solid var(--border);
+  background: rgba(34,212,200,0.05);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.sc-head::before {
+  content: '▪';
+  color: var(--teal);
+}
+.sc-field {
+  padding: 5px 13px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  display: flex;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(28,39,54,0.5);
+}
+.sc-field:last-child { border-bottom: none; }
+.sc-fname { color: var(--text); }
+.sc-ftype { color: var(--muted); }
+.sc-fpk   { color: var(--yellow); font-size: 0.58rem; letter-spacing: .04em; }
+.sc-frel  { color: var(--purple); }
+.sc-arrow { color: var(--muted2); font-size: 1.4rem; flex-shrink: 0; align-self: center; }
+
+/* ── FILE TREE ── */
+.ftree {
+  background: #030608;
+  border: 1px solid var(--border2);
+  border-radius: var(--r-lg);
+  padding: 18px 22px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  line-height: 1.95;
+  margin: 14px 0;
+}
+.ft-dir  { color: var(--accent); font-weight: 600; }
+.ft-file { color: #7ba8c8; }
+.ft-new  { color: var(--green); }
+.ft-note { color: var(--muted2); font-style: italic; margin-left: 10px; }
+
+/* ── FLOW DIAGRAM ── */
+.flow {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  margin: 18px 0;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+.flow-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  min-width: 100px;
+}
+.flow-box {
+  padding: 8px 14px;
+  border-radius: var(--r-md);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+}
+.fb-blue   { background: rgba(59,158,255,0.12); color: var(--accent); border: 1px solid rgba(59,158,255,0.3); }
+.fb-teal   { background: rgba(34,212,200,0.1);  color: var(--teal);   border: 1px solid rgba(34,212,200,0.25); }
+.fb-green  { background: rgba(34,217,138,0.1);  color: var(--green);  border: 1px solid rgba(34,217,138,0.25); }
+.fb-purple { background: rgba(168,127,255,0.1); color: var(--purple); border: 1px solid rgba(168,127,255,0.25); }
+.flow-label { font-size: 0.6rem; color: var(--muted2); text-align: center; }
+.flow-arrow { color: var(--muted2); font-size: 1rem; flex-shrink: 0; padding: 0 2px; margin-bottom: 20px; }
+
+/* ── FOOTER ── */
+.footer {
+  border-top: 1px solid var(--border);
+  padding: 20px 72px;
+  font-size: 0.74rem;
+  color: var(--muted2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.footer a { color: var(--muted); text-decoration: none; }
+.footer a:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <div class="version-pill">Prisma v7 · Officiel</div>
+    <div class="sidebar-logo">Prisma ORM<br>avec MySQL</div>
+    <div class="sidebar-sub">TypeScript · ESM · Driver Adapter</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Mise en place</div>
+    <a class="nav-item active" href="#intro"><span class="nav-step">00</span>Vue d'ensemble</a>
+    <a class="nav-item" href="#step1"><span class="nav-step">01</span>Créer le projet</a>
+    <a class="nav-item" href="#step2"><span class="nav-step">02</span>Installer les dépendances</a>
+    <a class="nav-item" href="#step3"><span class="nav-step">03</span>Configurer ESM</a>
+    <a class="nav-item" href="#step4"><span class="nav-step">04</span>Initialiser Prisma</a>
+    <a class="nav-item" href="#step5"><span class="nav-step">05</span>Définir le schéma</a>
+    <a class="nav-item" href="#step6"><span class="nav-step">06</span>Migrations</a>
+    <a class="nav-item" href="#step7"><span class="nav-step">07</span>Instancier le client</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Requêtes &amp; API</div>
+    <a class="nav-item" href="#step8"><span class="nav-step">08</span>Première requête</a>
+    <a class="nav-item" href="#crud"><span class="nav-step">09</span>CRUD Prisma Client</a>
+    <a class="nav-item" href="#relations"><span class="nav-step">10</span>Relations &amp; include</a>
+    <a class="nav-item" href="#express"><span class="nav-step">11</span>Architecture MVC</a>
+    <a class="nav-item" href="#models"><span class="nav-step">12</span>Couche Models</a>
+    <a class="nav-item" href="#controllers"><span class="nav-step">13</span>Couche Controllers</a>
+    <a class="nav-item" href="#routes"><span class="nav-step">14</span>Couche Routes</a>
+    <a class="nav-item" href="#errors"><span class="nav-step">15</span>Erreurs Prisma</a>
+    <a class="nav-item" href="#studio"><span class="nav-step">16</span>Prisma Studio</a>
+    <a class="nav-item" href="#tips"><span class="nav-step">17</span>Bonnes pratiques</a>
+  </div>
+
+  <div class="nav-source">
+    Source : <a href="https://www.prisma.io/docs/prisma-orm/quickstart/mysql" target="_blank">docs.prisma.io/quickstart/mysql</a><br>
+    Version : Prisma v7 · MySQL 8+
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main class="main">
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-doc-badge">✓ Basé sur la documentation officielle Prisma v7</div>
+  <h1 class="hero-title">Prisma ORM<br>avec <em>MySQL</em> &amp; Express</h1>
+  <p class="hero-desc">
+    Guide complet de la mise en place à une API REST production-ready.
+    TypeScript, ESM, Driver Adapter mariadb — l'architecture officielle Prisma v7.
+  </p>
+  <div class="hero-pills">
+    <div class="pill"><span class="pill-dot" style="background:var(--accent)"></span>Prisma 7+</div>
+    <div class="pill"><span class="pill-dot" style="background:var(--orange)"></span>MySQL 8+</div>
+    <div class="pill"><span class="pill-dot" style="background:var(--green)"></span>Express 4</div>
+    <div class="pill"><span class="pill-dot" style="background:var(--accent)"></span>TypeScript 5</div>
+    <div class="pill"><span class="pill-dot" style="background:var(--yellow)"></span>Node.js 20+</div>
+    <div class="pill"><span class="pill-dot" style="background:var(--purple)"></span>ESM</div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- ═══ 00 — INTRO ═══ -->
+<section class="step-section" id="intro">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">00</span></div>
+    <div>
+      <div class="step-title">Vue d'ensemble</div>
+      <div class="step-subtitle">Architecture, prérequis et flux de travail</div>
+    </div>
+  </div>
+
+  <p class="prose">
+    Prisma ORM v7 adopte une <strong>nouvelle architecture basée sur les Driver Adapters</strong>.
+    Au lieu d'embarquer un moteur de base de données interne en Rust, Prisma délègue maintenant
+    la connexion à un <em>driver adapter</em> Node.js natif — ici <code>@prisma/adapter-mariadb</code>
+    pour MySQL et MariaDB.
+  </p>
+
+  <div class="flow">
+    <div class="flow-step">
+      <div class="flow-box fb-blue">Express<br>Request</div>
+      <div class="flow-label">HTTP</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-box fb-blue">Route</div>
+      <div class="flow-label">src/routes/</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-box fb-purple">Controller</div>
+      <div class="flow-label">src/controllers/</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-box fb-teal">Model</div>
+      <div class="flow-label">src/models/</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-box fb-teal">Prisma<br>Client</div>
+      <div class="flow-label">generated/prisma</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step">
+      <div class="flow-box fb-green">MySQL</div>
+      <div class="flow-label">localhost:3306</div>
+    </div>
+  </div>
+
+  <p class="prose"><strong>Prérequis :</strong></p>
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Outil</th><th>Version min.</th><th>Vérification</th></tr></thead>
+      <tbody>
+        <tr><td>Node.js</td><td>20+</td><td><code>node -v</code></td></tr>
+        <tr><td>npm</td><td>9+</td><td><code>npm -v</code></td></tr>
+        <tr><td>MySQL / MariaDB</td><td>8+ / 10.5+</td><td><code>mysql --version</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="prose">Tu dois aussi avoir ton serveur MySQL démarré, et connaître son hôte, port, utilisateur, mot de passe et le nom de la base à utiliser.</p>
+
+  <h3 class="sub">Architecture finale du projet</h3>
+  <div class="ftree">
+    <span class="ft-dir">mon-api/</span><br>
+    &nbsp;&nbsp;<span class="ft-file">├── prisma/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; ├── schema.prisma</span><span class="ft-note">// modèles de données</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; └── migrations/</span><span class="ft-note">// historique SQL versionné</span><br>
+    &nbsp;&nbsp;<span class="ft-new">├── generated/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; └── prisma/</span><span class="ft-note">// ← client généré (hors node_modules)</span><br>
+    &nbsp;&nbsp;<span class="ft-file">├── src/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; ├── index.ts</span><span class="ft-note">// point d'entrée Express</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; ├── lib/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; │&nbsp;&nbsp; └── prisma.ts</span><span class="ft-note">// instance Prisma Client (singleton)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; ├── models/</span><span class="ft-note">// ← couche données : toutes les requêtes Prisma</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── user.model.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── post.model.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; └── tag.model.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; ├── controllers/</span><span class="ft-note">// ← couche métier : valide et orchestre</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── user.controller.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── post.controller.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; └── tag.controller.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; ├── routes/</span><span class="ft-note">// ← couche HTTP : déclare les endpoints</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── users.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── posts.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; │&nbsp;&nbsp; └── tags.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; └── middleware/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── errorHandler.ts</span><br>
+    &nbsp;&nbsp;<span class="ft-new">├── prisma.config.ts</span><span class="ft-note">// ← nouveau en v7 (config centralisée)</span><br>
+    &nbsp;&nbsp;<span class="ft-file">├── .env</span><br>
+    &nbsp;&nbsp;<span class="ft-file">├── tsconfig.json</span><br>
+    &nbsp;&nbsp;<span class="ft-file">└── package.json</span>
+  </div>
+</section>
+
+<!-- ═══ 01 — CRÉER LE PROJET ═══ -->
+<section class="step-section" id="step1">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">01</span></div>
+    <div>
+      <div class="step-title">Créer le projet</div>
+      <div class="step-subtitle">Initialisation Node.js et TypeScript</div>
+    </div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📟 Terminal</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt"># Créer le dossier et s'y placer</span>
+mkdir mon-api
+cd mon-api
+
+<span class="cmt"># Initialiser npm (crée package.json)</span>
+npm init -y
+
+<span class="cmt"># Installer TypeScript, tsx et les types Node</span>
+npm install typescript tsx @types/node --save-dev
+
+<span class="cmt"># Générer le tsconfig.json de base</span>
+npx tsc --init</code></pre>
+  </div>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">💡</span> Pourquoi <code>tsx</code> et pas <code>ts-node</code> ?
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      <strong>ts-node</strong> est l'outil historique pour exécuter TypeScript directement dans Node.js.
+      Il a deux problèmes avec l'architecture moderne :<br><br>
+      <ul>
+        <li>Il gère mal <strong>ESM</strong> (ECMAScript Modules), le système <code>import/export</code> moderne.</li>
+        <li>Il est lent car il transpile à la volée via le compilateur TypeScript officiel.</li>
+      </ul>
+      <br>
+      <strong>tsx</strong> est un remplacement moderne basé sur <em>esbuild</em> (le même moteur que Vite).
+      Il est beaucoup plus rapide et supporte ESM nativement. Pour exécuter un script :
+      <code>npx tsx script.ts</code>. Pour le mode watch (rechargement auto) : <code>tsx watch src/index.ts</code>.
+    </div>
+  </details>
+</section>
+
+<!-- ═══ 02 — DÉPENDANCES ═══ -->
+<section class="step-section" id="step2">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">02</span></div>
+    <div>
+      <div class="step-title">Installer les dépendances</div>
+      <div class="step-subtitle">Prisma CLI, Client, Adapter et Express</div>
+    </div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📟 Terminal — source : docs.prisma.io/quickstart/mysql</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt"># Dépendances de développement (CLI Prisma)</span>
+npm install prisma @types/node --save-dev
+
+<span class="cmt"># Dépendances de production</span>
+npm install @prisma/client @prisma/adapter-mariadb dotenv
+
+<span class="cmt"># Express et ses types</span>
+npm install express
+npm install @types/express --save-dev</code></pre>
+  </div>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">📦</span> Rôle de chaque package
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      <div class="tbl-wrap" style="margin:0">
+        <table>
+          <thead><tr><th>Package</th><th>Type</th><th>Rôle</th></tr></thead>
+          <tbody>
+            <tr><td><code>prisma</code></td><td>devDep</td><td>La <strong>CLI</strong> : <code>migrate</code>, <code>generate</code>, <code>studio</code>… Outil de développement uniquement, pas présent en prod.</td></tr>
+            <tr><td><code>@prisma/client</code></td><td>dep</td><td>Le <strong>runtime</strong> : contient les types et le code de base du client. En prod.</td></tr>
+            <tr><td><code>@prisma/adapter-mariadb</code></td><td>dep</td><td>Le <strong>driver adapter</strong> : fait la connexion TCP réelle avec MySQL. Contient le pool de connexions. Remplace le moteur Rust interne de Prisma v5.</td></tr>
+            <tr><td><code>dotenv</code></td><td>dep</td><td>Charge les variables du fichier <code>.env</code> dans <code>process.env</code>.</td></tr>
+            <tr><td><code>express</code></td><td>dep</td><td>Serveur HTTP.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <div class="callout cw">
+    <span class="callout-ico">⚠️</span>
+    <div><strong>Note :</strong> <code>@prisma/adapter-mariadb</code> fonctionne aussi bien avec <strong>MySQL</strong> que <strong>MariaDB</strong> — le nom du package est historique, pas limitatif.</div>
+  </div>
+</section>
+
+<!-- ═══ 03 — ESM ═══ -->
+<section class="step-section" id="step3">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">03</span></div>
+    <div>
+      <div class="step-title">Configurer ESM</div>
+      <div class="step-subtitle">ECMAScript Modules — le système <code>import/export</code> moderne</div>
+    </div>
+  </div>
+
+  <p class="prose">
+    Prisma v7 adopte <strong>ESM par défaut</strong>. ESM est le système de modules standardisé de JavaScript,
+    qui utilise <code>import/export</code> au lieu de <code>require/module.exports</code> (CommonJS).
+    Deux fichiers à modifier :
+  </p>
+
+  <h3 class="sub">tsconfig.json</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 tsconfig.json — remplacer le contenu généré par npx tsc --init</div>
+      <span class="lt lt-json">json</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code>{
+  <span class="prp">"compilerOptions"</span>: {
+    <span class="str">"module"</span>:             <span class="str">"ESNext"</span>,
+    <span class="str">"moduleResolution"</span>:   <span class="str">"bundler"</span>,
+    <span class="str">"target"</span>:             <span class="str">"ES2023"</span>,
+    <span class="str">"lib"</span>:                [<span class="str">"ES2023"</span>],
+    <span class="str">"types"</span>:              [<span class="str">"node"</span>],        <span class="cmt">// ← indispensable pour process, __dirname…</span>
+    <span class="str">"strict"</span>:             <span class="kw">true</span>,
+    <span class="str">"esModuleInterop"</span>:    <span class="kw">true</span>,
+    <span class="str">"ignoreDeprecations"</span>: <span class="str">"6.0"</span>
+  }
+}</code></pre>
+  </div>
+
+  <h3 class="sub">package.json — ajouter "type": "module"</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 package.json — ajouter la ligne type + scripts</div>
+      <span class="lt lt-json">json</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code>{
+  <span class="prp">"name"</span>: <span class="str">"mon-api"</span>,
+  <span class="prp">"version"</span>: <span class="str">"1.0.0"</span>,
+  <span class="prp">"type"</span>: <span class="str">"module"</span>,
+  <span class="prp">"scripts"</span>: {
+    <span class="prp">"dev"</span>:          <span class="str">"tsx watch src/index.ts"</span>,
+    <span class="prp">"build"</span>:        <span class="str">"tsc"</span>,
+    <span class="prp">"start"</span>:        <span class="str">"node dist/index.js"</span>,
+    <span class="prp">"db:migrate"</span>:   <span class="str">"prisma migrate dev"</span>,
+    <span class="prp">"db:generate"</span>:  <span class="str">"prisma generate"</span>,
+    <span class="prp">"db:studio"</span>:    <span class="str">"prisma studio"</span>
+  }
+}</code></pre>
+  </div>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">🔍</span> Explication ligne par ligne du tsconfig
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      <div class="hl-line">
+        <span class="hl-line-num">"types": ["node"]</span>
+        <span class="hl-line-desc">Indique à TypeScript de charger les déclarations de types Node.js (<code>process</code>, <code>Buffer</code>, <code>__dirname</code>…). Sans cette option, TypeScript ne connaît pas <code>process.env</code> et souligne tous tes accès aux variables d'environnement en rouge.</span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">"lib": ["ES2023"]</span>
+        <span class="hl-line-desc">Déclare quelles API JavaScript natives sont disponibles au runtime (Promise, Map, Set, Array methods…). Doit correspondre au <code>target</code>.</span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">"module": "ESNext"</span>
+        <span class="hl-line-desc">TypeScript compile vers ESM (utilise <code>import/export</code> dans le JS généré). Sans cette option, il compilerait vers CommonJS (<code>require</code>).</span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">"moduleResolution": "bundler"</span>
+        <span class="hl-line-desc">Algorithme de résolution des imports. <code>"bundler"</code> est le mode moderne, compatible avec tsx et esbuild. L'ancien mode <code>"node"</code> ne comprend pas certains imports ESM modernes.</span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">"target": "ES2023"</span>
+        <span class="hl-line-desc">La version de JavaScript produite. ES2023 est supportée par Node.js 20+.</span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">"ignoreDeprecations": "6.0"</span>
+        <span class="hl-line-desc">Supprime certains warnings TypeScript liés à des options dépréciées dans TS 6.0. Recommandé par la doc officielle Prisma.</span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">"type": "module" (package.json)</span>
+        <span class="hl-line-desc">Indique à Node.js que <strong>tous les fichiers .js</strong> de ce projet sont ESM. Sans cette ligne, Node.js traite les .js comme CommonJS même si ton TypeScript compile vers ESM.</span>
+      </div>
+    </div>
+  </details>
+</section>
+
+<!-- ═══ 04 — INIT PRISMA ═══ -->
+<section class="step-section" id="step4">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">04</span></div>
+    <div>
+      <div class="step-title">Initialiser Prisma ORM</div>
+      <div class="step-subtitle">Création du schéma, de la config et du .env</div>
+    </div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📟 Terminal</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code>npx prisma init --datasource-provider mysql --output ../generated/prisma</code></pre>
+  </div>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">🔍</span> Que fait cette commande ? (3 fichiers créés)
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      Cette commande crée <strong>trois choses</strong> :
+      <div class="hl-line" style="margin-top:12px">
+        <span class="hl-line-num">prisma/schema.prisma</span>
+        <span class="hl-line-desc">Le fichier central : il décrit tes modèles de données (tables, colonnes, relations). C'est la source de vérité.</span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">.env</span>
+        <span class="hl-line-desc">Fichier de variables d'environnement. Contient l'URL de connexion MySQL. <strong>Ne jamais le committer dans Git.</strong></span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">prisma.config.ts ← nouveau v7</span>
+        <span class="hl-line-desc">Fichier de configuration Prisma externalisé. Centralise le chemin du schéma, des migrations et l'URL de connexion. Remplace ce qui était dans schema.prisma.</span>
+      </div>
+      <br>
+      <strong>L'option <code>--output ../generated/prisma</code></strong> indique où générer le client Prisma.
+      En v7, il atterrit dans <code>generated/prisma/</code> à la racine du projet plutôt que dans
+      <code>node_modules/@prisma/client</code>. Avantages : le code est visible, inspectable, et
+      tu l'importes avec un chemin relatif clair.
+    </div>
+  </details>
+
+  <h3 class="sub">Ce que Prisma génère : prisma.config.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 prisma.config.ts — généré automatiquement, ne pas modifier l'URL ici</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> <span class="str">"dotenv/config"</span>
+<span class="kw">import</span> { defineConfig, env } <span class="kw">from</span> <span class="str">"prisma/config"</span>
+
+<span class="kw">export default</span> defineConfig({
+  schema: <span class="str">"prisma/schema.prisma"</span>,    <span class="cmt">// chemin vers le fichier schéma</span>
+  migrations: {
+    path: <span class="str">"prisma/migrations"</span>,      <span class="cmt">// dossier des migrations SQL</span>
+  },
+  datasource: {
+    url: env(<span class="str">"DATABASE_URL"</span>),        <span class="cmt">// lit DATABASE_URL dans .env</span>
+  },
+})</code></pre>
+  </div>
+
+  <h3 class="sub">Ce que Prisma génère : prisma/schema.prisma (en-tête)</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 prisma/schema.prisma — en-tête généré automatiquement</div>
+      <span class="lt lt-prisma">Prisma</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">generator</span> client {
+  provider = <span class="str">"prisma-client"</span>          <span class="cmt">// nouveau nom en v7 (était "prisma-client-js")</span>
+  output   = <span class="str">"../generated/prisma"</span>    <span class="cmt">// client généré hors de node_modules</span>
+}
+
+<span class="kw">datasource</span> db {
+  provider = <span class="str">"mysql"</span>
+  <span class="cmt">// pas d'url ici : elle est dans prisma.config.ts</span>
+}</code></pre>
+  </div>
+
+  <h3 class="sub">Configurer le .env</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">🔒 .env — remplacer les placeholders par tes vraies valeurs</div>
+      <span class="lt lt-env">env</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt"># URL complète (utilisée par Prisma CLI pour migrate)</span>
+DATABASE_URL=<span class="str">"mysql://username:password@localhost:3306/mydb"</span>
+
+<span class="cmt"># Paramètres séparés (utilisés par le Driver Adapter à l'exécution)</span>
+DATABASE_HOST=<span class="str">"localhost"</span>
+DATABASE_PORT=<span class="num">3306</span>
+DATABASE_USER=<span class="str">"username"</span>
+DATABASE_PASSWORD=<span class="str">"password"</span>
+DATABASE_NAME=<span class="str">"mydb"</span>
+
+<span class="cmt"># Express</span>
+PORT=<span class="num">3000</span>
+NODE_ENV=<span class="str">"development"</span></code></pre>
+  </div>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">❓</span> Pourquoi deux façons d'écrire les credentials ?
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      Il y a deux consommateurs distincts avec des besoins différents :<br><br>
+      <strong>DATABASE_URL (format URL)</strong> — utilisée par la <em>CLI Prisma</em> (<code>prisma migrate</code>, <code>prisma studio</code>…)
+      quand elle doit se connecter à la base. La CLI lit <code>prisma.config.ts</code> qui utilise <code>env("DATABASE_URL")</code>.<br><br>
+      <strong>Variables séparées HOST/PORT/USER…</strong> — utilisées par le <em>Driver Adapter</em> dans ton code TypeScript.
+      Le constructeur <code>new PrismaMariaDb({ host, user, password... })</code> attend des paramètres
+      distincts, pas une URL. C'est l'API du driver <code>@prisma/adapter-mariadb</code>.<br><br>
+      Les deux doivent pointer vers <strong>la même base</strong>, avec les mêmes credentials.
+    </div>
+  </details>
+
+  <div class="callout cw">
+    <span class="callout-ico">⚠️</span>
+    <div>Ajoute <code>.env</code> à ton <code>.gitignore</code> immédiatement. Ne committe jamais tes credentials de base de données.</div>
+  </div>
+</section>
+
+<!-- ═══ 05 — SCHÉMA ═══ -->
+<section class="step-section" id="step5">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">05</span></div>
+    <div>
+      <div class="step-title">Définir le schéma de données</div>
+      <div class="step-subtitle">Modèles, champs, types, relations et contraintes</div>
+    </div>
+  </div>
+
+  <p class="prose">
+    Le fichier <code>prisma/schema.prisma</code> est la <strong>source de vérité unique</strong> de ta base.
+    Chaque <code>model</code> devient une table SQL. Prisma génère le SQL et les types TypeScript à partir de ce fichier.
+  </p>
+
+  <h3 class="sub">Schéma de départ (conforme à la doc officielle)</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 prisma/schema.prisma — modèles User et Post</div>
+      <span class="lt lt-prisma">Prisma</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">generator</span> client {
+  provider = <span class="str">"prisma-client"</span>
+  output   = <span class="str">"../generated/prisma"</span>
+}
+
+<span class="kw">datasource</span> db {
+  provider = <span class="str">"mysql"</span>
+}
+
+<span class="kw">model</span> <span class="typ">User</span> {
+  id    <span class="typ">Int</span>     <span class="ann">@id @default(autoincrement())</span>
+  email <span class="typ">String</span>  <span class="ann">@unique</span>
+  name  <span class="typ">String</span>?
+  posts <span class="typ">Post[]</span>                <span class="cmt">// relation 1-à-N : un user a plusieurs posts</span>
+}
+
+<span class="kw">model</span> <span class="typ">Post</span> {
+  id        <span class="typ">Int</span>     <span class="ann">@id @default(autoincrement())</span>
+  title     <span class="typ">String</span>
+  content   <span class="typ">String</span>? <span class="ann">@db.Text</span>
+  published <span class="typ">Boolean</span> <span class="ann">@default(false)</span>
+  author    <span class="typ">User</span>    <span class="ann">@relation(fields: [authorId], references: [id])</span>
+  authorId  <span class="typ">Int</span>                    <span class="cmt">// clé étrangère vers User.id</span>
+}</code></pre>
+  </div>
+
+  <div class="schema-cards">
+    <div class="sc">
+      <div class="sc-head">User</div>
+      <div class="sc-field"><span class="sc-fname">id</span><span class="sc-ftype">Int</span><span class="sc-fpk">PK · AI</span></div>
+      <div class="sc-field"><span class="sc-fname">email</span><span class="sc-ftype">String</span><span class="sc-fpk">UNIQUE</span></div>
+      <div class="sc-field"><span class="sc-fname">name</span><span class="sc-ftype">String?</span></div>
+      <div class="sc-field"><span class="sc-fname">posts</span><span class="sc-frel">Post[]</span></div>
+    </div>
+    <div class="sc-arrow">→</div>
+    <div class="sc">
+      <div class="sc-head">Post</div>
+      <div class="sc-field"><span class="sc-fname">id</span><span class="sc-ftype">Int</span><span class="sc-fpk">PK · AI</span></div>
+      <div class="sc-field"><span class="sc-fname">title</span><span class="sc-ftype">String</span></div>
+      <div class="sc-field"><span class="sc-fname">content</span><span class="sc-ftype">String?</span></div>
+      <div class="sc-field"><span class="sc-fname">published</span><span class="sc-ftype">Boolean</span></div>
+      <div class="sc-field"><span class="sc-fname">authorId</span><span class="sc-ftype">Int</span><span class="sc-fpk">FK</span></div>
+    </div>
+  </div>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">🔍</span> Décryptage de chaque attribut Prisma
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      <div class="tbl-wrap" style="margin:0">
+        <table>
+          <thead><tr><th>Attribut</th><th>SQL généré</th><th>Explication</th></tr></thead>
+          <tbody>
+            <tr><td><code>@id</code></td><td><code>PRIMARY KEY</code></td><td>Identifiant unique de la ligne.</td></tr>
+            <tr><td><code>@default(autoincrement())</code></td><td><code>AUTO_INCREMENT</code></td><td>Valeur entière auto-incrémentée à chaque INSERT.</td></tr>
+            <tr><td><code>@unique</code></td><td><code>UNIQUE</code></td><td>Contrainte d'unicité : deux lignes ne peuvent avoir la même valeur.</td></tr>
+            <tr><td><code>String?</code></td><td><code>VARCHAR(191) NULL</code></td><td>Le <code>?</code> rend le champ optionnel (nullable). Sans <code>?</code> : <code>NOT NULL</code>.</td></tr>
+            <tr><td><code>@db.Text</code></td><td><code>TEXT</code></td><td>Surcharge le type MySQL. Sans ça, <code>String</code> → <code>VARCHAR(191)</code>.</td></tr>
+            <tr><td><code>@default(false)</code></td><td><code>DEFAULT false</code></td><td>Valeur par défaut si le champ n'est pas fourni.</td></tr>
+            <tr><td><code>@relation(...)</code></td><td><code>FOREIGN KEY</code></td><td>Déclare la clé étrangère. <code>fields</code> = colonne locale, <code>references</code> = colonne cible.</td></tr>
+            <tr><td><code>Post[]</code></td><td>—</td><td>Champ virtuel (pas de colonne SQL). Permet l'<code>include</code> côté Prisma. Représente la relation inverse.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </details>
+
+  <h3 class="sub">Schéma étendu pour un blog complet</h3>
+  <p class="prose">Pour un projet réel, on ajoute des types plus précis, des timestamps et une relation N-à-M :</p>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 prisma/schema.prisma — schéma de blog complet</div>
+      <span class="lt lt-prisma">Prisma</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">generator</span> client {
+  provider = <span class="str">"prisma-client"</span>
+  output   = <span class="str">"../generated/prisma"</span>
+}
+
+<span class="kw">datasource</span> db {
+  provider = <span class="str">"mysql"</span>
+}
+
+<span class="kw">enum</span> <span class="typ">Role</span> {
+  USER
+  ADMIN
+}
+
+<span class="kw">model</span> <span class="typ">User</span> {
+  id        <span class="typ">Int</span>      <span class="ann">@id @default(autoincrement())</span>
+  email     <span class="typ">String</span>   <span class="ann">@unique</span>
+  name      <span class="typ">String</span>?  <span class="ann">@db.VarChar(100)</span>
+  password  <span class="typ">String</span>   <span class="ann">@db.VarChar(255)</span>
+  role      <span class="typ">Role</span>     <span class="ann">@default(USER)</span>
+  createdAt <span class="typ">DateTime</span> <span class="ann">@default(now()) @map("created_at")</span>
+  updatedAt <span class="typ">DateTime</span> <span class="ann">@updatedAt      @map("updated_at")</span>
+  posts     <span class="typ">Post[]</span>
+  <span class="ann">@@map("users")</span>
+}
+
+<span class="kw">model</span> <span class="typ">Post</span> {
+  id        <span class="typ">Int</span>      <span class="ann">@id @default(autoincrement())</span>
+  title     <span class="typ">String</span>   <span class="ann">@db.VarChar(255)</span>
+  slug      <span class="typ">String</span>   <span class="ann">@unique @db.VarChar(255)</span>
+  content   <span class="typ">String</span>?  <span class="ann">@db.LongText</span>
+  published <span class="typ">Boolean</span>  <span class="ann">@default(false)</span>
+  createdAt <span class="typ">DateTime</span> <span class="ann">@default(now()) @map("created_at")</span>
+  updatedAt <span class="typ">DateTime</span> <span class="ann">@updatedAt      @map("updated_at")</span>
+  authorId  <span class="typ">Int</span>      <span class="ann">@map("author_id")</span>
+  author    <span class="typ">User</span>     <span class="ann">@relation(fields: [authorId], references: [id])</span>
+  tags      <span class="typ">Tag[]</span>
+  <span class="ann">@@map("posts")</span>
+}
+
+<span class="kw">model</span> <span class="typ">Tag</span> {
+  id    <span class="typ">Int</span>    <span class="ann">@id @default(autoincrement())</span>
+  name  <span class="typ">String</span> <span class="ann">@unique @db.VarChar(50)</span>
+  posts <span class="typ">Post[]</span>               <span class="cmt">// relation N-à-M implicite avec Post</span>
+  <span class="ann">@@map("tags")</span>
+}</code></pre>
+  </div>
+</section>
+
+<!-- ═══ 06 — MIGRATIONS ═══ -->
+<section class="step-section" id="step6">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">06</span></div>
+    <div>
+      <div class="step-title">Créer et appliquer les migrations</div>
+      <div class="step-subtitle">Du schéma Prisma aux tables MySQL</div>
+    </div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📟 Terminal — commandes de migration</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt"># Créer + appliquer la migration initiale</span>
+npx prisma migrate dev --name init
+
+<span class="cmt"># Après modification du schéma : nouvelle migration</span>
+npx prisma migrate dev --name add_slug_to_post
+
+<span class="cmt"># Générer/regénérer le client TypeScript</span>
+npx prisma generate
+
+<span class="cmt"># Voir le statut des migrations</span>
+npx prisma migrate status
+
+<span class="cmt"># En production : appliquer sans interaction</span>
+npx prisma migrate deploy
+
+<span class="cmt"># Reset complet — ⚠️ DÉTRUIT TOUTES LES DONNÉES</span>
+npx prisma migrate reset</code></pre>
+  </div>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">⚙️</span> Que fait <code>prisma migrate dev</code> exactement ?
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      En une seule commande, Prisma fait 3 choses dans l'ordre :
+      <div class="hl-line" style="margin-top:12px">
+        <span class="hl-line-num">① Génère le SQL</span>
+        <span class="hl-line-desc">Compare ton <code>schema.prisma</code> avec l'état actuel de la base. Calcule le diff et génère un fichier <code>prisma/migrations/20240101_init/migration.sql</code>.</span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">② Exécute le SQL</span>
+        <span class="hl-line-desc">Applique le fichier SQL sur ta base MySQL. Crée les tables, colonnes, index, foreign keys…</span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">③ Génère le client</span>
+        <span class="hl-line-desc">Appelle <code>prisma generate</code> automatiquement. Le dossier <code>generated/prisma/</code> est mis à jour avec les types TypeScript correspondant à tes nouveaux modèles.</span>
+      </div>
+    </div>
+  </details>
+
+  <h3 class="sub">Exemple de SQL généré par Prisma Migrate</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 prisma/migrations/20240101_init/migration.sql — généré automatiquement</div>
+      <span class="lt lt-sql">SQL</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt">-- CreateTable</span>
+<span class="kw">CREATE TABLE</span> <span class="typ">`users`</span> (
+    <span class="prp">`id`</span>         <span class="typ">INTEGER</span>      <span class="kw">NOT NULL AUTO_INCREMENT</span>,
+    <span class="prp">`email`</span>      <span class="typ">VARCHAR</span>(<span class="num">191</span>) <span class="kw">NOT NULL</span>,
+    <span class="prp">`name`</span>       <span class="typ">VARCHAR</span>(<span class="num">191</span>),
+    <span class="prp">`published`</span>  <span class="typ">BOOLEAN</span>      <span class="kw">NOT NULL DEFAULT</span> <span class="kw">false</span>,
+    <span class="prp">`created_at`</span> <span class="typ">DATETIME</span>(<span class="num">3</span>)  <span class="kw">NOT NULL DEFAULT</span> <span class="fn">CURRENT_TIMESTAMP</span>(<span class="num">3</span>),
+    <span class="kw">PRIMARY KEY</span> (<span class="prp">`id`</span>),
+    <span class="kw">UNIQUE INDEX</span> <span class="typ">`users_email_key`</span>(<span class="prp">`email`</span>)
+);
+
+<span class="cmt">-- CreateTable</span>
+<span class="kw">CREATE TABLE</span> <span class="typ">`posts`</span> (
+    <span class="prp">`id`</span>         <span class="typ">INTEGER</span>      <span class="kw">NOT NULL AUTO_INCREMENT</span>,
+    <span class="prp">`title`</span>      <span class="typ">VARCHAR</span>(<span class="num">191</span>) <span class="kw">NOT NULL</span>,
+    <span class="prp">`content`</span>    <span class="typ">TEXT</span>,
+    <span class="prp">`published`</span>  <span class="typ">BOOLEAN</span>      <span class="kw">NOT NULL DEFAULT</span> <span class="kw">false</span>,
+    <span class="prp">`author_id`</span>  <span class="typ">INTEGER</span>      <span class="kw">NOT NULL</span>,
+    <span class="kw">PRIMARY KEY</span> (<span class="prp">`id`</span>),
+    <span class="kw">FOREIGN KEY</span> (<span class="prp">`author_id`</span>) <span class="kw">REFERENCES</span> <span class="typ">`users`</span>(<span class="prp">`id`</span>)
+);</code></pre>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Commande</th><th>Quand l'utiliser</th><th>Interactif ?</th></tr></thead>
+      <tbody>
+        <tr><td><code>migrate dev --name xxx</code></td><td>Développement — après chaque modif du schéma</td><td>Oui (peut demander confirmation)</td></tr>
+        <tr><td><code>migrate deploy</code></td><td>CI/CD et production — applique les migrations en attente</td><td>Non</td></tr>
+        <tr><td><code>migrate status</code></td><td>Voir quelles migrations sont appliquées ou en attente</td><td>Non</td></tr>
+        <tr><td><code>migrate reset</code></td><td>Reset complet dev — efface tout et repart de zéro</td><td>Oui (demande confirmation)</td></tr>
+        <tr><td><code>generate</code></td><td>Regénérer le client sans migrer (ex : après git pull)</td><td>Non</td></tr>
+        <tr><td><code>studio</code></td><td>Interface graphique de la base sur localhost:5555</td><td>Lance un serveur</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 07 — CLIENT ═══ -->
+<section class="step-section" id="step7">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">07</span></div>
+    <div>
+      <div class="step-title">Instancier Prisma Client</div>
+      <div class="step-subtitle">Driver Adapter + singleton + variables d'environnement</div>
+    </div>
+  </div>
+
+  <p class="prose">
+    C'est le fichier que tu avais en screenshot avec les soulignements rouges.
+    Voici la version correcte avec la gestion propre des variables d'environnement.
+  </p>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/lib/prisma.ts — version officielle + correction des types</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> <span class="str">"dotenv/config"</span>
+<span class="kw">import</span> { PrismaMariaDb } <span class="kw">from</span> <span class="str">"@prisma/adapter-mariadb"</span>
+<span class="kw">import</span> { PrismaClient }  <span class="kw">from</span> <span class="str">"../../generated/prisma/client"</span>
+
+<span class="cmt">// ── Validation des variables d'env au démarrage ──────────────────</span>
+<span class="cmt">// Évite les erreurs silencieuses : si une var manque, on le sait immédiatement</span>
+<span class="kw">function</span> <span class="fn">requireEnv</span>(key: <span class="typ">string</span>): <span class="typ">string</span> {
+  <span class="kw">const</span> value = process.env[key]
+  <span class="kw">if</span> (!value) <span class="kw">throw new</span> <span class="typ">Error</span>(<span class="str">`Variable manquante dans .env : <span class="op">${key}</span>`</span>)
+  <span class="kw">return</span> value
+}
+
+<span class="cmt">// ── Driver Adapter : gère la connexion TCP avec MySQL ────────────</span>
+<span class="kw">const</span> adapter = <span class="kw">new</span> PrismaMariaDb({
+  host:            requireEnv(<span class="str">"DATABASE_HOST"</span>),
+  user:            requireEnv(<span class="str">"DATABASE_USER"</span>),
+  password:        requireEnv(<span class="str">"DATABASE_PASSWORD"</span>),
+  database:        requireEnv(<span class="str">"DATABASE_NAME"</span>),
+  port:            Number(process.env.DATABASE_PORT) || <span class="num">3306</span>,
+  connectionLimit: <span class="num">5</span>,   <span class="cmt">// max connexions simultanées dans le pool</span>
+})
+
+<span class="cmt">// ── Prisma Client : API de requêtes TypeScript ───────────────────</span>
+<span class="kw">const</span> prisma = <span class="kw">new</span> PrismaClient({ adapter })
+
+<span class="kw">export</span> { prisma }</code></pre>
+  </div>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">🔴</span> Pourquoi les soulignements rouges et comment les corriger
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      <strong>Cause principale :</strong> <code>process.env.X</code> retourne <code>string | undefined</code> en TypeScript.
+      Or, <code>PrismaMariaDb</code> attend des <code>string</code> stricts. TypeScript refuse la combinaison.<br><br>
+      <strong>La fonction <code>requireEnv()</code></strong> résout le problème : elle vérifie que la valeur existe
+      (<code>if (!value) throw</code>), puis retourne un <code>string</code> garanti. TypeScript est satisfait.<br><br>
+      <strong>Pour le port</strong> : <code>process.env.DATABASE_PORT</code> est toujours une <code>string</code>,
+      on le convertit avec <code>Number()</code>. Le <code>|| 3306</code> fournit une valeur par défaut si la variable est absente.<br><br>
+      <strong>Avantage bonus</strong> : si tu oublies de définir une variable dans <code>.env</code>,
+      ton serveur plante immédiatement au démarrage avec un message clair — pas à la première requête en production.
+    </div>
+  </details>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">🔍</span> Qu'est-ce qu'un Driver Adapter et pourquoi ça change en v7 ?
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      <strong>Prisma v5 et avant</strong> : Prisma embarquait un <em>moteur en Rust</em> qui gérait lui-même
+      la connexion TCP à MySQL, la sérialisation des requêtes et le pool de connexions. Ce moteur était
+      opaque, difficile à configurer et produisait un binaire natif lourd.<br><br>
+      <strong>Prisma v7</strong> : Prisma délègue à un <em>Driver Adapter</em> — une couche Node.js pure
+      qui utilise un driver de la communauté (ici le driver MariaDB/MySQL).
+      Tu passes cet adapter à <code>PrismaClient({ adapter })</code>.<br><br>
+      <strong>Avantages</strong> :
+      <ul>
+        <li>Tu contrôles le pool de connexions (<code>connectionLimit</code>).</li>
+        <li>Le client est plus léger (pas de binaire natif).</li>
+        <li>Compatible avec les environnements Edge (Cloudflare Workers, etc.).</li>
+        <li>Meilleure interopérabilité avec l'écosystème Node.js.</li>
+      </ul>
+      <strong><code>connectionLimit: 5</code></strong> signifie que Prisma maintient au maximum 5 connexions
+      TCP ouvertes vers MySQL en parallèle. Les requêtes supplémentaires attendent qu'une connexion se libère.
+    </div>
+  </details>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">🔍</span> Pourquoi l'import vient de <code>../../generated/prisma/client</code> ?
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      En Prisma v7 avec l'option <code>--output ../generated/prisma</code>, le client généré
+      atterrit dans <code>generated/prisma/</code> à la racine du projet.<br><br>
+      Si ton fichier est dans <code>src/lib/prisma.ts</code>, le chemin relatif vers
+      <code>generated/prisma/client</code> est <code>../../generated/prisma/client</code>
+      (deux niveaux vers le haut).<br><br>
+      <strong>Structure :</strong>
+      <div class="hl-line" style="margin-top:8px">
+        <span class="hl-line-num">src/lib/prisma.ts</span>
+        <span class="hl-line-desc">→ <code>../</code> remonte dans <code>src/</code> → <code>../../</code> remonte à la racine → <code>generated/prisma/client</code></span>
+      </div>
+      Si ton fichier était dans <code>src/prisma.ts</code>, le chemin serait <code>../generated/prisma/client</code>.
+      Ajuste selon ton arborescence.
+    </div>
+  </details>
+</section>
+
+<!-- ═══ 08 — PREMIÈRE REQUÊTE ═══ -->
+<section class="step-section" id="step8">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">08</span></div>
+    <div>
+      <div class="step-title">Première requête — tester le setup</div>
+      <div class="step-subtitle">Créer des données et les lire avec <code>npx tsx</code></div>
+    </div>
+  </div>
+
+  <p class="prose">Crée un fichier <code>script.ts</code> à la racine du projet pour tester que tout fonctionne :</p>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 script.ts — conforme à la doc officielle</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { prisma } <span class="kw">from</span> <span class="str">"./src/lib/prisma.js"</span>
+
+<span class="kw">async function</span> <span class="fn">main</span>() {
+  <span class="cmt">// Créer un utilisateur avec un post lié en une seule requête</span>
+  <span class="kw">const</span> user = <span class="kw">await</span> prisma.user.create({
+    data: {
+      name:  <span class="str">"Alice"</span>,
+      email: <span class="str">"alice@prisma.io"</span>,
+      posts: {
+        create: {
+          title:     <span class="str">"Hello World"</span>,
+          content:   <span class="str">"Mon premier post avec Prisma !"</span>,
+          published: <span class="kw">true</span>,
+        },
+      },
+    },
+    include: {
+      posts: <span class="kw">true</span>,   <span class="cmt">// retourner les posts dans la réponse</span>
+    },
+  })
+  console.log(<span class="str">"Utilisateur créé :"</span>, user)
+
+  <span class="cmt">// Lire tous les utilisateurs avec leurs posts</span>
+  <span class="kw">const</span> allUsers = <span class="kw">await</span> prisma.user.findMany({
+    include: { posts: <span class="kw">true</span> },
+  })
+  console.log(<span class="str">"Tous les utilisateurs :"</span>, JSON.stringify(allUsers, <span class="kw">null</span>, <span class="num">2</span>))
+}
+
+main()
+  .then(<span class="kw">async</span> () => { <span class="kw">await</span> prisma.<span class="fn">$disconnect</span>() })
+  .catch(<span class="kw">async</span> (e) => {
+    console.error(e)
+    <span class="kw">await</span> prisma.<span class="fn">$disconnect</span>()
+    process.exit(<span class="num">1</span>)
+  })</code></pre>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📟 Terminal — exécuter le script</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code>npx tsx script.ts</code></pre>
+  </div>
+
+  <div class="callout ci">
+    <span class="callout-ico">ℹ️</span>
+    <div>
+      <strong>Note sur les imports ESM :</strong> Dans les fichiers <code>.ts</code> avec ESM,
+      les imports de tes propres modules doivent utiliser l'extension <code>.js</code> (pas <code>.ts</code>) :
+      <code>import { prisma } from "./src/lib/prisma.js"</code>. C'est une règle ESM — TypeScript
+      comprend qu'il doit chercher le fichier <code>.ts</code> correspondant.
+    </div>
+  </div>
+</section>
+
+<!-- ═══ 09 — CRUD ═══ -->
+<section class="step-section" id="crud">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">09</span></div>
+    <div>
+      <div class="step-title">Opérations CRUD complètes</div>
+      <div class="step-subtitle">Create · Read · Update · Delete · Upsert · Count · Aggregate</div>
+    </div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 Toutes les méthodes Prisma Client</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { prisma } <span class="kw">from</span> <span class="str">"./src/lib/prisma.js"</span>
+
+<span class="cmt">// ── CREATE ───────────────────────────────────────────────────────</span>
+<span class="kw">const</span> newUser = <span class="kw">await</span> prisma.user.create({
+  data: { email: <span class="str">"bob@exemple.fr"</span>, name: <span class="str">"Bob"</span> },
+})
+
+<span class="cmt">// ── READ ONE (par champ unique) ───────────────────────────────────</span>
+<span class="kw">const</span> user = <span class="kw">await</span> prisma.user.findUnique({
+  where: { email: <span class="str">"bob@exemple.fr"</span> },
+})
+<span class="cmt">// Si l'enregistrement doit exister (lève une erreur si absent) :</span>
+<span class="kw">const</span> userOrThrow = <span class="kw">await</span> prisma.user.findUniqueOrThrow({
+  where: { id: <span class="num">1</span> },
+})
+
+<span class="cmt">// ── READ MANY (filtre + tri + pagination) ─────────────────────────</span>
+<span class="kw">const</span> users = <span class="kw">await</span> prisma.user.findMany({
+  where:   { name: { contains: <span class="str">"bob"</span> } },
+  orderBy: { createdAt: <span class="str">"desc"</span> },
+  take:    <span class="num">10</span>,      <span class="cmt">// LIMIT 10</span>
+  skip:    <span class="num">0</span>,       <span class="cmt">// OFFSET 0</span>
+  select:  { id: <span class="kw">true</span>, email: <span class="kw">true</span>, name: <span class="kw">true</span> }, <span class="cmt">// pas de password !</span>
+})
+
+<span class="cmt">// ── UPDATE ───────────────────────────────────────────────────────</span>
+<span class="kw">const</span> updated = <span class="kw">await</span> prisma.user.update({
+  where: { id: <span class="num">1</span> },
+  data:  { name: <span class="str">"Bob Dupont"</span> },
+})
+
+<span class="cmt">// ── UPSERT (créer si absent, mettre à jour si présent) ───────────</span>
+<span class="kw">const</span> upserted = <span class="kw">await</span> prisma.user.upsert({
+  where:  { email: <span class="str">"alice@exemple.fr"</span> },
+  update: { name: <span class="str">"Alice Updated"</span> },
+  create: { email: <span class="str">"alice@exemple.fr"</span>, name: <span class="str">"Alice"</span> },
+})
+
+<span class="cmt">// ── DELETE ───────────────────────────────────────────────────────</span>
+<span class="kw">await</span> prisma.user.delete({ where: { id: <span class="num">1</span> } })
+
+<span class="cmt">// ── COUNT ────────────────────────────────────────────────────────</span>
+<span class="kw">const</span> total = <span class="kw">await</span> prisma.post.count({
+  where: { published: <span class="kw">true</span> },
+})
+
+<span class="cmt">// ── AGGREGATE (stats numériques) ─────────────────────────────────</span>
+<span class="kw">const</span> stats = <span class="kw">await</span> prisma.post.aggregate({
+  _count: { id: <span class="kw">true</span> },
+  _avg:   { id: <span class="kw">true</span> },
+})
+
+<span class="cmt">// ── FILTRES AVANCÉS ───────────────────────────────────────────────</span>
+<span class="kw">const</span> posts = <span class="kw">await</span> prisma.post.findMany({
+  where: {
+    AND: [
+      { published: <span class="kw">true</span> },
+      { title: { contains: <span class="str">"prisma"</span> } },
+      { createdAt: { gte: <span class="kw">new</span> Date(<span class="str">"2024-01-01"</span>) } },
+    ],
+  },
+})</code></pre>
+  </div>
+</section>
+
+<!-- ═══ 10 — RELATIONS ═══ -->
+<section class="step-section" id="relations">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">10</span></div>
+    <div>
+      <div class="step-title">Relations et <code>include</code></div>
+      <div class="step-subtitle">Charger les données liées — JOIN sans écrire de SQL</div>
+    </div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 Requêtes avec relations</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt">// ── include : charger les relations (comme un JOIN) ───────────────</span>
+<span class="kw">const</span> userWithPosts = <span class="kw">await</span> prisma.user.findUnique({
+  where:   { id: <span class="num">1</span> },
+  include: { posts: <span class="kw">true</span> },
+})
+
+<span class="cmt">// ── include filtré : seulement les posts publiés ──────────────────</span>
+<span class="kw">const</span> userPublished = <span class="kw">await</span> prisma.user.findUnique({
+  where: { id: <span class="num">1</span> },
+  include: {
+    posts: {
+      where:   { published: <span class="kw">true</span> },
+      orderBy: { createdAt: <span class="str">"desc"</span> },
+      take:    <span class="num">5</span>,
+    },
+  },
+})
+
+<span class="cmt">// ── Créer un post lié à un user existant ──────────────────────────</span>
+<span class="kw">const</span> post = <span class="kw">await</span> prisma.post.create({
+  data: {
+    title:   <span class="str">"Mon article"</span>,
+    content: <span class="str">"Contenu..."</span>,
+    author:  { connect: { id: <span class="num">1</span> } },  <span class="cmt">// relier à l'user id=1</span>
+  },
+  include: { author: <span class="kw">true</span> },
+})
+
+<span class="cmt">// ── _count : compter les relations sans les charger ───────────────</span>
+<span class="kw">const</span> usersWithCount = <span class="kw">await</span> prisma.user.findMany({
+  select: {
+    id:     <span class="kw">true</span>,
+    email:  <span class="kw">true</span>,
+    _count: { select: { posts: <span class="kw">true</span> } },  <span class="cmt">// nb de posts sans les charger</span>
+  },
+})
+
+<span class="cmt">// ── Transaction : plusieurs opérations atomiques ──────────────────</span>
+<span class="kw">const</span> [usersResult, postsResult] = <span class="kw">await</span> prisma.$transaction([
+  prisma.user.findMany(),
+  prisma.post.count({ where: { published: <span class="kw">true</span> } }),
+])
+
+<span class="cmt">// ── Transaction interactive (dépendances entre opérations) ────────</span>
+<span class="kw">const</span> result = <span class="kw">await</span> prisma.$transaction(<span class="kw">async</span> (tx) => {
+  <span class="kw">const</span> user = <span class="kw">await</span> tx.user.create({ data: { email: <span class="str">"x@x.fr"</span> } })
+  <span class="kw">const</span> post = <span class="kw">await</span> tx.post.create({
+    data: { title: <span class="str">"Post"</span>, author: { connect: { id: user.id } } },
+  })
+  <span class="kw">return</span> { user, post }   <span class="cmt">// si ça plante ici, les deux sont annulés</span>
+})</code></pre>
+  </div>
+
+  <div class="callout cw">
+    <span class="callout-ico">⚡</span>
+    <div><strong>Problème N+1 :</strong> ne jamais appeler <code>findMany()</code> dans une boucle. Utilise <code>include</code> ou <code>_count</code> pour charger les relations en une seule requête SQL. Prisma génère un <code>JOIN</code> efficace automatiquement.</div>
+  </div>
+</section>
+
+<!-- ═══ 11 — ARCHITECTURE MVC ═══ -->
+<section class="step-section" id="express">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">11</span></div>
+    <div>
+      <div class="step-title">Architecture MVC — Vue d'ensemble</div>
+      <div class="step-subtitle">Route → Controller → Model : séparation claire des responsabilités</div>
+    </div>
+  </div>
+
+  <p class="prose">
+    Mettre toute la logique directement dans les routes est une erreur fréquente qui rend le code
+    difficile à tester et à maintenir. L'architecture <strong>MVC</strong> sépare les responsabilités en trois couches :
+  </p>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Couche</th><th>Fichiers</th><th>Responsabilité</th></tr></thead>
+      <tbody>
+        <tr><td><strong>Route</strong></td><td><code>src/routes/*.ts</code></td><td>Déclare les endpoints HTTP. Ne fait <em>rien</em> d'autre que d'appeler le bon controller. Aucune logique ici.</td></tr>
+        <tr><td><strong>Controller</strong></td><td><code>src/controllers/*.ts</code></td><td>Valide les entrées (<code>req.body</code>, <code>req.params</code>), appelle le model, formate la réponse HTTP. C'est la logique métier.</td></tr>
+        <tr><td><strong>Model</strong></td><td><code>src/models/*.ts</code></td><td>Toutes les requêtes Prisma. Retourne des données brutes. Aucune référence à Express (<code>req</code>, <code>res</code>) ici.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">Point d'entrée Express</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/index.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> express <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { usersRouter } <span class="kw">from</span> <span class="str">"./routes/users.js"</span>
+<span class="kw">import</span> { postsRouter }  <span class="kw">from</span> <span class="str">"./routes/posts.js"</span>
+<span class="kw">import</span> { tagsRouter }   <span class="kw">from</span> <span class="str">"./routes/tags.js"</span>
+<span class="kw">import</span> { errorHandler } <span class="kw">from</span> <span class="str">"./middleware/errorHandler.js"</span>
+
+<span class="kw">const</span> app  = express()
+<span class="kw">const</span> PORT = Number(process.env.PORT) || <span class="num">3000</span>
+
+app.use(express.json())
+
+<span class="cmt">// Routes — chaque router gère son préfixe</span>
+app.use(<span class="str">"/api/users"</span>, usersRouter)
+app.use(<span class="str">"/api/posts"</span>,  postsRouter)
+app.use(<span class="str">"/api/tags"</span>,   tagsRouter)
+
+<span class="cmt">// Healthcheck</span>
+app.get(<span class="str">"/health"</span>, (_req, res) => {
+  res.json({ status: <span class="str">"ok"</span>, timestamp: <span class="kw">new</span> Date().toISOString() })
+})
+
+<span class="cmt">// 404 et gestionnaire d'erreurs global (toujours en dernier)</span>
+app.use((_req, res) => res.status(<span class="num">404</span>).json({ error: <span class="str">"Route introuvable"</span> }))
+app.use(errorHandler)
+
+app.listen(PORT, () =>
+  console.log(<span class="str">`🚀 Serveur sur http://localhost:<span class="op">${PORT}</span>`</span>)
+)</code></pre>
+  </div>
+</section>
+
+<!-- ═══ 12 — MODELS ═══ -->
+<section class="step-section" id="models">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">12</span></div>
+    <div>
+      <div class="step-title">Couche Models — Requêtes Prisma</div>
+      <div class="step-subtitle">Toute interaction avec la base est isolée ici</div>
+    </div>
+  </div>
+
+  <p class="prose">
+    Les models contiennent <strong>uniquement</strong> les requêtes Prisma. Ils ne savent pas ce qu'est Express,
+    ne manipulent jamais <code>req</code> ni <code>res</code>. Cela permet de les réutiliser et de les tester indépendamment.
+  </p>
+
+  <h3 class="sub">user.model.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/models/user.model.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { prisma } <span class="kw">from</span> <span class="str">"../lib/prisma.js"</span>
+
+<span class="cmt">// Champs publics : on exclut password de tous les select</span>
+<span class="kw">const</span> userSelect = {
+  id:        <span class="kw">true</span>,
+  email:     <span class="kw">true</span>,
+  name:      <span class="kw">true</span>,
+  createdAt: <span class="kw">true</span>,
+} <span class="kw">as const</span>
+
+<span class="kw">export const</span> UserModel = {
+
+  findAll: (page: <span class="typ">number</span>, limit: <span class="typ">number</span>) => {
+    <span class="kw">const</span> skip = (page - <span class="num">1</span>) * limit
+    <span class="kw">return</span> prisma.$transaction([
+      prisma.user.findMany({
+        skip, take: limit,
+        select:  userSelect,
+        orderBy: { id: <span class="str">"desc"</span> },
+      }),
+      prisma.user.count(),
+    ])
+  },
+
+  findById: (id: <span class="typ">number</span>) =>
+    prisma.user.findUnique({
+      where:   { id },
+      select:  { ...userSelect, posts: { select: { id: <span class="kw">true</span>, title: <span class="kw">true</span>, published: <span class="kw">true</span> } } },
+    }),
+
+  findByEmail: (email: <span class="typ">string</span>) =>
+    prisma.user.findUnique({ where: { email } }),
+
+  create: (data: { email: <span class="typ">string</span>; name?: <span class="typ">string</span>; password: <span class="typ">string</span> }) =>
+    prisma.user.create({ data, select: userSelect }),
+
+  update: (id: <span class="typ">number</span>, data: { name?: <span class="typ">string</span> }) =>
+    prisma.user.update({ where: { id }, data, select: userSelect }),
+
+  remove: (id: <span class="typ">number</span>) =>
+    prisma.user.delete({ where: { id } }),
+
+}</code></pre>
+  </div>
+
+  <h3 class="sub">post.model.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/models/post.model.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { prisma } <span class="kw">from</span> <span class="str">"../lib/prisma.js"</span>
+
+<span class="kw">type</span> PostCreateInput = {
+  title:    <span class="typ">string</span>
+  content?: <span class="typ">string</span>
+  slug:     <span class="typ">string</span>
+  authorId: <span class="typ">number</span>
+  tagIds?:  <span class="typ">number</span>[]
+}
+
+<span class="kw">type</span> PostUpdateInput = {
+  title?:     <span class="typ">string</span>
+  content?:   <span class="typ">string</span>
+  published?: <span class="typ">boolean</span>
+  tagIds?:    <span class="typ">number</span>[]
+}
+
+<span class="kw">const</span> postInclude = {
+  author: { select: { id: <span class="kw">true</span>, name: <span class="kw">true</span>, email: <span class="kw">true</span> } },
+  tags:   { select: { id: <span class="kw">true</span>, name: <span class="kw">true</span> } },
+} <span class="kw">as const</span>
+
+<span class="kw">export const</span> PostModel = {
+
+  findAll: (page: <span class="typ">number</span>, limit: <span class="typ">number</span>, published?: <span class="typ">boolean</span>) => {
+    <span class="kw">const</span> skip  = (page - <span class="num">1</span>) * limit
+    <span class="kw">const</span> where = published !== undefined ? { published } : {}
+    <span class="kw">return</span> prisma.$transaction([
+      prisma.post.findMany({
+        where, skip, take: limit,
+        include: postInclude,
+        orderBy: { id: <span class="str">"desc"</span> },
+      }),
+      prisma.post.count({ where }),
+    ])
+  },
+
+  findById: (id: <span class="typ">number</span>) =>
+    prisma.post.findUnique({ where: { id }, include: postInclude }),
+
+  findBySlug: (slug: <span class="typ">string</span>) =>
+    prisma.post.findUnique({ where: { slug }, include: postInclude }),
+
+  create: ({ tagIds, ...data }: PostCreateInput) =>
+    prisma.post.create({
+      data: {
+        ...data,
+        tags: tagIds?.length
+          ? { connect: tagIds.map((id) => ({ id })) }
+          : undefined,
+      },
+      include: postInclude,
+    }),
+
+  update: (id: <span class="typ">number</span>, { tagIds, ...data }: PostUpdateInput) =>
+    prisma.post.update({
+      where: { id },
+      data: {
+        ...data,
+        tags: tagIds !== undefined
+          ? { set: tagIds.map((id) => ({ id })) }  <span class="cmt">// set remplace les tags existants</span>
+          : undefined,
+      },
+      include: postInclude,
+    }),
+
+  remove: (id: <span class="typ">number</span>) =>
+    prisma.post.delete({ where: { id } }),
+
+  countByAuthor: (authorId: <span class="typ">number</span>) =>
+    prisma.post.count({ where: { authorId } }),
+
+}</code></pre>
+  </div>
+
+  <h3 class="sub">tag.model.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/models/tag.model.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { prisma } <span class="kw">from</span> <span class="str">"../lib/prisma.js"</span>
+
+<span class="kw">export const</span> TagModel = {
+
+  findAll: () =>
+    prisma.tag.findMany({
+      orderBy: { name: <span class="str">"asc"</span> },
+      include: { _count: { select: { posts: <span class="kw">true</span> } } },  <span class="cmt">// nb de posts par tag</span>
+    }),
+
+  findById: (id: <span class="typ">number</span>) =>
+    prisma.tag.findUnique({
+      where:   { id },
+      include: { posts: { select: { id: <span class="kw">true</span>, title: <span class="kw">true</span>, published: <span class="kw">true</span> } } },
+    }),
+
+  findByName: (name: <span class="typ">string</span>) =>
+    prisma.tag.findUnique({ where: { name } }),
+
+  create: (name: <span class="typ">string</span>) =>
+    prisma.tag.create({ data: { name } }),
+
+  update: (id: <span class="typ">number</span>, name: <span class="typ">string</span>) =>
+    prisma.tag.update({ where: { id }, data: { name } }),
+
+  remove: (id: <span class="typ">number</span>) =>
+    prisma.tag.delete({ where: { id } }),
+
+  upsert: (name: <span class="typ">string</span>) =>
+    prisma.tag.upsert({
+      where:  { name },
+      create: { name },
+      update: {},           <span class="cmt">// rien à mettre à jour si déjà existant</span>
+    }),
+
+}</code></pre>
+  </div>
+</section>
+
+<!-- ═══ 13 — CONTROLLERS ═══ -->
+<section class="step-section" id="controllers">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">13</span></div>
+    <div>
+      <div class="step-title">Couche Controllers — Logique métier</div>
+      <div class="step-subtitle">Validation des entrées, appel du model, formatage de la réponse</div>
+    </div>
+  </div>
+
+  <p class="prose">
+    Le controller est le chef d'orchestre : il reçoit la requête HTTP d'Express, <strong>valide les données</strong>,
+    appelle le model, puis renvoie la réponse. Il ne contient aucune requête Prisma directe.
+    En cas d'erreur, il appelle <code>next(err)</code> pour déléguer au middleware d'erreur.
+  </p>
+
+  <h3 class="sub">user.controller.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/controllers/user.controller.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { UserModel } <span class="kw">from</span> <span class="str">"../models/user.model.js"</span>
+
+<span class="kw">export const</span> UserController = {
+
+  getAll: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> page  = Math.max(<span class="num">1</span>, Number(req.query.page)  || <span class="num">1</span>)
+      <span class="kw">const</span> limit = Math.min(<span class="num">100</span>, Number(req.query.limit) || <span class="num">10</span>)
+      <span class="kw">const</span> [data, total] = <span class="kw">await</span> UserModel.findAll(page, limit)
+      res.json({ data, pagination: { page, limit, total, pages: Math.ceil(total / limit) } })
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  getOne: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> id = parseInt(req.params.id)
+      <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
+      <span class="kw">const</span> user = <span class="kw">await</span> UserModel.findById(id)
+      <span class="kw">if</span> (!user) <span class="kw">return</span> res.status(<span class="num">404</span>).json({ error: <span class="str">"Utilisateur introuvable"</span> })
+      res.json(user)
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  create: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> { email, name, password } = req.body
+      <span class="kw">if</span> (!email || !password)
+        <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"email et password sont requis"</span> })
+      <span class="cmt">// Note : hasher le password ici avec bcrypt avant de passer au model</span>
+      <span class="kw">const</span> user = <span class="kw">await</span> UserModel.create({ email, name, password })
+      res.status(<span class="num">201</span>).json(user)
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  update: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> id = parseInt(req.params.id)
+      <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
+      <span class="kw">const</span> user = <span class="kw">await</span> UserModel.update(id, { name: req.body.name })
+      res.json(user)
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  remove: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> id = parseInt(req.params.id)
+      <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
+      <span class="kw">await</span> UserModel.remove(id)
+      res.status(<span class="num">204</span>).send()
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+}</code></pre>
+  </div>
+
+  <h3 class="sub">post.controller.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/controllers/post.controller.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { PostModel } <span class="kw">from</span> <span class="str">"../models/post.model.js"</span>
+
+<span class="kw">export const</span> PostController = {
+
+  getAll: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> page      = Math.max(<span class="num">1</span>, Number(req.query.page)  || <span class="num">1</span>)
+      <span class="kw">const</span> limit     = Math.min(<span class="num">100</span>, Number(req.query.limit) || <span class="num">10</span>)
+      <span class="kw">const</span> published = req.query.published !== undefined
+        ? req.query.published === <span class="str">"true"</span>
+        : undefined
+      <span class="kw">const</span> [data, total] = <span class="kw">await</span> PostModel.findAll(page, limit, published)
+      res.json({ data, pagination: { page, limit, total, pages: Math.ceil(total / limit) } })
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  getOne: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> id = parseInt(req.params.id)
+      <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
+      <span class="kw">const</span> post = <span class="kw">await</span> PostModel.findById(id)
+      <span class="kw">if</span> (!post) <span class="kw">return</span> res.status(<span class="num">404</span>).json({ error: <span class="str">"Article introuvable"</span> })
+      res.json(post)
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  create: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> { title, content, slug, authorId, tagIds } = req.body
+      <span class="kw">if</span> (!title || !slug || !authorId)
+        <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"title, slug et authorId sont requis"</span> })
+      <span class="kw">const</span> post = <span class="kw">await</span> PostModel.create({
+        title, content, slug,
+        authorId: Number(authorId),
+        tagIds: tagIds ? (tagIds <span class="kw">as</span> <span class="typ">number</span>[]) : [],
+      })
+      res.status(<span class="num">201</span>).json(post)
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  update: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> id = parseInt(req.params.id)
+      <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
+      <span class="kw">const</span> { title, content, published, tagIds } = req.body
+      <span class="kw">const</span> post = <span class="kw">await</span> PostModel.update(id, { title, content, published, tagIds })
+      res.json(post)
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  remove: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> id = parseInt(req.params.id)
+      <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
+      <span class="kw">await</span> PostModel.remove(id)
+      res.status(<span class="num">204</span>).send()
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+}</code></pre>
+  </div>
+
+  <h3 class="sub">tag.controller.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/controllers/tag.controller.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { TagModel } <span class="kw">from</span> <span class="str">"../models/tag.model.js"</span>
+
+<span class="kw">export const</span> TagController = {
+
+  getAll: <span class="kw">async</span> (_req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> tags = <span class="kw">await</span> TagModel.findAll()
+      res.json(tags)
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  getOne: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> id = parseInt(req.params.id)
+      <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
+      <span class="kw">const</span> tag = <span class="kw">await</span> TagModel.findById(id)
+      <span class="kw">if</span> (!tag) <span class="kw">return</span> res.status(<span class="num">404</span>).json({ error: <span class="str">"Tag introuvable"</span> })
+      res.json(tag)
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  create: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> { name } = req.body
+      <span class="kw">if</span> (!name) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"name est requis"</span> })
+      <span class="kw">const</span> tag = <span class="kw">await</span> TagModel.create(String(name))
+      res.status(<span class="num">201</span>).json(tag)
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  update: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> id = parseInt(req.params.id)
+      <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
+      <span class="kw">if</span> (!req.body.name) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"name est requis"</span> })
+      <span class="kw">const</span> tag = <span class="kw">await</span> TagModel.update(id, String(req.body.name))
+      res.json(tag)
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+  remove: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+    <span class="kw">try</span> {
+      <span class="kw">const</span> id = parseInt(req.params.id)
+      <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
+      <span class="kw">await</span> TagModel.remove(id)
+      res.status(<span class="num">204</span>).send()
+    } <span class="kw">catch</span> (err) { next(err) }
+  },
+
+}</code></pre>
+  </div>
+</section>
+
+<!-- ═══ 14 — ROUTES ═══ -->
+<section class="step-section" id="routes">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">14</span></div>
+    <div>
+      <div class="step-title">Couche Routes — Endpoints HTTP</div>
+      <div class="step-subtitle">Les routes ne font qu'une chose : brancher une URL sur un controller</div>
+    </div>
+  </div>
+
+  <p class="prose">
+    Une route ne doit contenir <strong>aucune logique</strong> — juste la déclaration de l'endpoint et l'appel
+    au bon handler du controller. Ce fichier sert de table de routage lisible en un coup d'œil.
+  </p>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/routes/users.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { UserController } <span class="kw">from</span> <span class="str">"../controllers/user.controller.js"</span>
+
+<span class="kw">export const</span> usersRouter = Router()
+
+<span class="cmt">// GET    /api/users          → liste paginée</span>
+<span class="cmt">// GET    /api/users/:id      → un utilisateur avec ses posts</span>
+<span class="cmt">// POST   /api/users          → créer un utilisateur</span>
+<span class="cmt">// PATCH  /api/users/:id      → modifier le nom</span>
+<span class="cmt">// DELETE /api/users/:id      → supprimer</span>
+
+usersRouter.get   (<span class="str">"/"</span>,    UserController.getAll)
+usersRouter.get   (<span class="str">"/:id"</span>, UserController.getOne)
+usersRouter.post  (<span class="str">"/"</span>,    UserController.create)
+usersRouter.patch (<span class="str">"/:id"</span>, UserController.update)
+usersRouter.delete(<span class="str">"/:id"</span>, UserController.remove)</code></pre>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/routes/posts.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { PostController } <span class="kw">from</span> <span class="str">"../controllers/post.controller.js"</span>
+
+<span class="kw">export const</span> postsRouter = Router()
+
+<span class="cmt">// GET    /api/posts?page=1&amp;limit=10&amp;published=true → liste filtrée</span>
+<span class="cmt">// GET    /api/posts/:id                             → un post avec auteur + tags</span>
+<span class="cmt">// POST   /api/posts                                 → créer un post</span>
+<span class="cmt">// PATCH  /api/posts/:id                             → modifier (titre, contenu, tags…)</span>
+<span class="cmt">// DELETE /api/posts/:id                             → supprimer</span>
+
+postsRouter.get   (<span class="str">"/"</span>,    PostController.getAll)
+postsRouter.get   (<span class="str">"/:id"</span>, PostController.getOne)
+postsRouter.post  (<span class="str">"/"</span>,    PostController.create)
+postsRouter.patch (<span class="str">"/:id"</span>, PostController.update)
+postsRouter.delete(<span class="str">"/:id"</span>, PostController.remove)</code></pre>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/routes/tags.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { TagController } <span class="kw">from</span> <span class="str">"../controllers/tag.controller.js"</span>
+
+<span class="kw">export const</span> tagsRouter = Router()
+
+<span class="cmt">// GET    /api/tags      → tous les tags avec leur nb de posts</span>
+<span class="cmt">// GET    /api/tags/:id  → un tag avec ses posts</span>
+<span class="cmt">// POST   /api/tags      → créer un tag</span>
+<span class="cmt">// PATCH  /api/tags/:id  → renommer</span>
+<span class="cmt">// DELETE /api/tags/:id  → supprimer</span>
+
+tagsRouter.get   (<span class="str">"/"</span>,    TagController.getAll)
+tagsRouter.get   (<span class="str">"/:id"</span>, TagController.getOne)
+tagsRouter.post  (<span class="str">"/"</span>,    TagController.create)
+tagsRouter.patch (<span class="str">"/:id"</span>, TagController.update)
+tagsRouter.delete(<span class="str">"/:id"</span>, TagController.remove)</code></pre>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Méthode</th><th>URL</th><th>Action</th><th>HTTP</th></tr></thead>
+      <tbody>
+        <tr><td><code>GET</code></td><td><code>/api/users</code></td><td>Liste paginée</td><td>200</td></tr>
+        <tr><td><code>GET</code></td><td><code>/api/users/:id</code></td><td>Un utilisateur + ses posts</td><td>200 / 404</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/users</code></td><td>Créer un utilisateur</td><td>201 / 400 / 409</td></tr>
+        <tr><td><code>PATCH</code></td><td><code>/api/users/:id</code></td><td>Modifier le nom</td><td>200 / 404</td></tr>
+        <tr><td><code>DELETE</code></td><td><code>/api/users/:id</code></td><td>Supprimer</td><td>204 / 404</td></tr>
+        <tr><td><code>GET</code></td><td><code>/api/posts?published=true</code></td><td>Posts filtrés</td><td>200</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/posts</code></td><td>Créer post + lier tags</td><td>201</td></tr>
+        <tr><td><code>PATCH</code></td><td><code>/api/posts/:id</code></td><td>Modifier + mettre à jour tags</td><td>200</td></tr>
+        <tr><td><code>GET</code></td><td><code>/api/tags</code></td><td>Tous les tags + nb posts</td><td>200</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/tags</code></td><td>Créer un tag</td><td>201 / 409</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 15 — ERREURS ═══ -->
+<section class="step-section" id="errors">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">15</span></div>
+    <div>
+      <div class="step-title">Gestion des erreurs Prisma</div>
+      <div class="step-subtitle">Intercepter les erreurs typées et retourner les bons codes HTTP</div>
+    </div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/middleware/errorHandler.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { Prisma } <span class="kw">from</span> <span class="str">"../../generated/prisma/client"</span>
+
+<span class="kw">export function</span> errorHandler(
+  err: Error,
+  _req: Request,
+  res: Response,
+  _next: NextFunction,
+) {
+  console.error(err)
+
+  <span class="cmt">// Erreur Prisma connue (contrainte, not found, FK…)</span>
+  <span class="kw">if</span> (err <span class="kw">instanceof</span> Prisma.PrismaClientKnownRequestError) {
+    <span class="kw">switch</span> (err.code) {
+      <span class="kw">case</span> <span class="str">"P2002"</span>:   <span class="cmt">// contrainte unique violée</span>
+        <span class="kw">return</span> res.status(<span class="num">409</span>).json({
+          error: <span class="str">"Conflit : valeur déjà utilisée"</span>,
+          field: (err.meta?.target <span class="kw">as</span> string[])?.join(<span class="str">", "</span>),
+          code:  err.code,
+        })
+      <span class="kw">case</span> <span class="str">"P2025"</span>:   <span class="cmt">// enregistrement introuvable (update/delete)</span>
+        <span class="kw">return</span> res.status(<span class="num">404</span>).json({ error: <span class="str">"Ressource introuvable"</span>, code: err.code })
+      <span class="kw">case</span> <span class="str">"P2003"</span>:   <span class="cmt">// violation de clé étrangère</span>
+        <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"Référence invalide"</span>, code: err.code })
+      <span class="kw">default</span>:
+        <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: err.message, code: err.code })
+    }
+  }
+
+  <span class="cmt">// Erreur de validation (mauvais type de données)</span>
+  <span class="kw">if</span> (err <span class="kw">instanceof</span> Prisma.PrismaClientValidationError) {
+    <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"Données invalides"</span> })
+  }
+
+  <span class="cmt">// Erreur générique</span>
+  res.status(<span class="num">500</span>).json({
+    error: <span class="str">"Erreur interne du serveur"</span>,
+    ...(process.env.NODE_ENV === <span class="str">"development"</span> && { details: err.message }),
+  })
+}</code></pre>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Code Prisma</th><th>Cause</th><th>HTTP</th></tr></thead>
+      <tbody>
+        <tr><td><code>P2002</code></td><td>Contrainte <code>@unique</code> violée — ex: email déjà existant</td><td>409</td></tr>
+        <tr><td><code>P2025</code></td><td>Enregistrement introuvable pour <code>update</code> ou <code>delete</code></td><td>404</td></tr>
+        <tr><td><code>P2003</code></td><td>Clé étrangère invalide — ex: <code>authorId</code> inexistant</td><td>400</td></tr>
+        <tr><td><code>P2000</code></td><td>Valeur trop longue pour le champ</td><td>400</td></tr>
+        <tr><td><code>P1001</code></td><td>Impossible de joindre le serveur MySQL</td><td>503</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- ═══ 16 — STUDIO ═══ -->
+<section class="step-section" id="studio">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">16</span></div>
+    <div>
+      <div class="step-title">Prisma Studio</div>
+      <div class="step-subtitle">Interface graphique pour explorer et modifier la base</div>
+    </div>
+  </div>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📟 Terminal</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code>npx prisma studio</code></pre>
+  </div>
+
+  <p class="prose">
+    Prisma Studio s'ouvre sur <strong>http://localhost:5555</strong>. Il permet de parcourir toutes les tables,
+    filtrer les données, créer et modifier des enregistrements directement depuis le navigateur.
+    Utile pour déboguer en développement sans écrire de SQL.
+  </p>
+</section>
+
+<!-- ═══ 17 — BONNES PRATIQUES ═══ -->
+<section class="step-section" id="tips">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">17</span></div>
+    <div>
+      <div class="step-title">Bonnes pratiques</div>
+      <div class="step-subtitle">Sécurité, performance et maintenabilité</div>
+    </div>
+  </div>
+
+  <div class="callout cd">
+    <span class="callout-ico">🔐</span>
+    <div><strong>Ne jamais retourner le mot de passe.</strong> Utilise toujours <code>select: { password: false }</code> ou liste explicitement les champs à retourner. Par défaut, Prisma retourne <strong>tous</strong> les champs.</div>
+  </div>
+
+  <div class="callout cw">
+    <span class="callout-ico">⚡</span>
+    <div><strong>Évite le problème N+1.</strong> Si tu fais <code>findMany()</code> puis une boucle avec <code>findUnique()</code> pour chaque résultat, tu génères N+1 requêtes SQL. Utilise <code>include</code> ou <code>_count</code> à la place.</div>
+  </div>
+
+  <div class="callout cs">
+    <span class="callout-ico">🗄️</span>
+    <div><strong>Versionne tes migrations.</strong> Le dossier <code>prisma/migrations/</code> doit être committé dans Git. C'est l'historique de l'évolution de ta base — indispensable pour la prod et le travail en équipe.</div>
+  </div>
+
+  <div class="callout cs">
+    <span class="callout-ico">🏭</span>
+    <div><strong>En production, utilise <code>prisma migrate deploy</code></strong> (pas <code>migrate dev</code>). La commande <code>deploy</code> est non-interactive et ne génère pas de nouvelles migrations — elle applique seulement celles qui existent déjà.</div>
+  </div>
+
+  <div class="callout ci">
+    <span class="callout-ico">🔄</span>
+    <div><strong>Après <code>git pull</code></strong> sur un projet existant, toujours exécuter <code>npx prisma generate</code> pour s'assurer que le client TypeScript est synchronisé avec le schéma de tes collègues.</div>
+  </div>
+
+  <h3 class="sub">Checklist de démarrage complète</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📟 Terminal — du zéro à l'API en marche</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt"># 1. Créer le projet</span>
+mkdir mon-api &amp;&amp; cd mon-api
+npm init -y
+npm install typescript tsx @types/node --save-dev
+npx tsc --init
+
+<span class="cmt"># 2. Installer les dépendances</span>
+npm install prisma @types/node --save-dev
+npm install @prisma/client @prisma/adapter-mariadb dotenv express
+npm install @types/express --save-dev
+
+<span class="cmt"># 3. Initialiser Prisma (crée schema.prisma + .env + prisma.config.ts)</span>
+npx prisma init --datasource-provider mysql --output ../generated/prisma
+
+<span class="cmt"># 4. Activer ESM dans package.json : ajouter "type": "module"</span>
+<span class="cmt"># 5. Mettre à jour tsconfig.json (module: ESNext, lib: ES2023, types: node…)</span>
+<span class="cmt"># 6. Remplir .env avec tes credentials MySQL</span>
+<span class="cmt"># 7. Écrire tes modèles dans prisma/schema.prisma</span>
+
+<span class="cmt"># 8. Créer les tables + générer le client TypeScript</span>
+npx prisma migrate dev --name init
+
+<span class="cmt"># 9. Créer l'arborescence MVC</span>
+mkdir -p src/lib src/models src/controllers src/routes src/middleware
+
+<span class="cmt"># 10. Tester avec un script</span>
+npx tsx script.ts
+
+<span class="cmt"># 11. Démarrer le serveur Express</span>
+npm run dev   <span class="cmt"># → tsx watch src/index.ts</span>
+
+<span class="cmt"># 12. (Optionnel) Interface visuelle de la base</span>
+npx prisma studio
+
+<span class="cmt"># 🚀 API disponible sur http://localhost:3000</span></code></pre>
+  </div>
+</section>
+
+</div><!-- content -->
+
+<footer class="footer">
+  <div>Guide Prisma ORM · MySQL · Express — TypeScript ESM · v7</div>
+  <div style="display:flex;gap:16px">
+    <a href="https://www.prisma.io/docs/prisma-orm/quickstart/mysql" target="_blank">Quickstart officiel</a>
+    <a href="https://www.prisma.io/docs" target="_blank">Docs Prisma</a>
+    <a href="https://expressjs.com" target="_blank">Docs Express</a>
+  </div>
+</footer>
+
+</main>
+</div>
+
+<script>
+// Scroll spy
+const stepSections = document.querySelectorAll('.step-section')
+const navItems = document.querySelectorAll('.nav-item')
+
+const spy = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navItems.forEach(n => n.classList.remove('active'))
+      const match = document.querySelector(`.nav-item[href="#${e.target.id}"]`)
+      if (match) match.classList.add('active')
+    }
+  })
+}, { threshold: 0.3, rootMargin: '-10% 0px -60% 0px' })
+
+stepSections.forEach(s => spy.observe(s))
+
+// Copy button
+function cp(btn) {
+  const pre = btn.closest('.cf')?.querySelector('pre')
+  if (!pre) return
+  navigator.clipboard.writeText(pre.textContent.trim()).then(() => {
+    btn.textContent = '✓ Copié'
+    btn.classList.add('ok')
+    setTimeout(() => { btn.textContent = 'Copier'; btn.classList.remove('ok') }, 2000)
+  })
+}
+
+// Details / explain — auto-close others
+document.querySelectorAll('details.explain').forEach(d => {
+  d.addEventListener('toggle', () => {
+    if (d.open) {
+      document.querySelectorAll('details.explain').forEach(o => {
+        if (o !== d) o.open = false
+      })
+    }
+  })
+})
+</script>
+</body>
+</html>
