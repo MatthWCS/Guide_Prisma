@@ -1,0 +1,25 @@
+{
+  "name": "api-prisma",
+  "version": "1.0.0",
+  "description": "A short step-by-step guide to getting started with Prisma ORM",
+  "homepage": "https://github.com/MatthWCS/Guide_Prisma#readme",
+  "bugs": {
+    "url": "https://github.com/MatthWCS/Guide_Prisma/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MatthWCS/Guide_Prisma.git"
+  },
+  "license": "ISC",
+  "author": "Claude.AI",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "@types/node": "^25.7.0",
+    "tsx": "^4.21.0",
+    "typescript": "^6.0.3"
+  }
+}
