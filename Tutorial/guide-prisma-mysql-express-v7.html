@@ -1549,8 +1549,8 @@ npx prisma migrate reset</code></pre>
 }
 
 main()
-  .then(<span class="kw">async</span> () => { <span class="kw">await</span> prisma.<span class="fn">$disconnect</span>() })
-  .catch(<span class="kw">async</span> (e) => {
+  .then(<span class="kw">async</span> () =`&gt;` { <span class="kw">await</span> prisma.<span class="fn">$disconnect</span>() })
+  .catch(<span class="kw">async</span> (e) =`&gt;` {
     console.error(e)
     <span class="kw">await</span> prisma.<span class="fn">$disconnect</span>()
     process.exit(<span class="num">1</span>)
@@ -1718,7 +1718,7 @@ main()
 ])
 
 <span class="cmt">// ── Transaction interactive (dépendances entre opérations) ────────</span>
-<span class="kw">const</span> result = <span class="kw">await</span> prisma.$transaction(<span class="kw">async</span> (tx) => {
+<span class="kw">const</span> result = <span class="kw">await</span> prisma.$transaction(<span class="kw">async</span> (tx) =`&gt;` {
   <span class="kw">const</span> user = <span class="kw">await</span> tx.user.create({ data: { email: <span class="str">"x@x.fr"</span> } })
   <span class="kw">const</span> post = <span class="kw">await</span> tx.post.create({
     data: { title: <span class="str">"Post"</span>, author: { connect: { id: user.id } } },
@@ -1783,15 +1783,15 @@ app.use(<span class="str">"/api/posts"</span>,  postsRouter)
 app.use(<span class="str">"/api/tags"</span>,   tagsRouter)
 
 <span class="cmt">// Healthcheck</span>
-app.get(<span class="str">"/health"</span>, (_req, res) => {
+app.get(<span class="str">"/health"</span>, (_req, res) =`&gt;` {
   res.json({ status: <span class="str">"ok"</span>, timestamp: <span class="kw">new</span> Date().toISOString() })
 })
 
 <span class="cmt">// 404 et gestionnaire d'erreurs global (toujours en dernier)</span>
-app.use((_req, res) => res.status(<span class="num">404</span>).json({ error: <span class="str">"Route introuvable"</span> }))
+app.use((_req, res) =`&gt;` res.status(<span class="num">404</span>).json({ error: <span class="str">"Route introuvable"</span> }))
 app.use(errorHandler)
 
-app.listen(PORT, () =>
+app.listen(PORT, () =`&gt;`
   console.log(<span class="str">`🚀 Serveur sur http://localhost:<span class="op">${PORT}</span>`</span>)
 )</code></pre>
   </div>
@@ -1831,7 +1831,7 @@ app.listen(PORT, () =>
 
 <span class="kw">export const</span> UserModel = {
 
-  findAll: (page: <span class="typ">number</span>, limit: <span class="typ">number</span>) => {
+  findAll: (page: <span class="typ">number</span>, limit: <span class="typ">number</span>) =`&gt;` {
     <span class="kw">const</span> skip = (page - <span class="num">1</span>) * limit
     <span class="kw">return</span> prisma.$transaction([
       prisma.user.findMany({
@@ -1843,7 +1843,7 @@ app.listen(PORT, () =>
     ])
   },
 
-  findById: (id: <span class="typ">number</span>) =>
+  findById: (id: <span class="typ">number</span>) =`&gt;`
     prisma.user.findUnique({
       where:   { id },
       select:  { ...userSelect, posts: { select: { id: <span class="kw">true</span>, title: <span class="kw">true</span>, published: <span class="kw">true</span> } } },
@@ -1852,13 +1852,13 @@ app.listen(PORT, () =>
   findByEmail: (email: <span class="typ">string</span>) =>
     prisma.user.findUnique({ where: { email } }),
 
-  create: (data: { email: <span class="typ">string</span>; name?: <span class="typ">string</span>; password: <span class="typ">string</span> }) =>
+  create: (data: { email: <span class="typ">string</span>; name?: <span class="typ">string</span>; password: <span class="typ">string</span> }) =`&gt;`
     prisma.user.create({ data, select: userSelect }),
 
   update: (id: <span class="typ">number</span>, data: { name?: <span class="typ">string</span> }) =>
     prisma.user.update({ where: { id }, data, select: userSelect }),
 
-  remove: (id: <span class="typ">number</span>) =>
+  remove: (id: <span class="typ">number</span>) =`&gt;`
     prisma.user.delete({ where: { id } }),
 
 }</code></pre>
