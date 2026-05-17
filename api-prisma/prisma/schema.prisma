@@ -9,3 +9,41 @@ generator client {
 datasource db {
   provider = "mysql"
 }
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @Unique
+  name String? @db.VarChar(100)
+  password String @db.VarChar(255)
+  role Role @default(USER)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  posts Post[]
+  @@maps("users")
+}
+
+model Post {
+  id Int @id @default(autoincrement())
+  title String @db.VarChar(255)
+  slug String @unique @db.VarChar(255)
+  content String? @db.LongText
+  published Boolean @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  authorId Int @map("author_id")
+  author User @relation(fields: [authorId], references: [id])
+  tags Tag[]
+  @@map("posts")
+}
+
+model Tag {
+  id Int @id @default(autoincrement())
+  name String @unique @db.VarChar(50)
+  posts Post[]
+  @@map("tags")
+}
