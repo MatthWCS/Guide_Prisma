@@ -17,14 +17,14 @@ enum Role {
 
 model User {
   id Int @id @default(autoincrement())
-  email String @Unique
+  email String @unique
   name String? @db.VarChar(100)
   password String @db.VarChar(255)
   role Role @default(USER)
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
   posts Post[]
-  @@maps("users")
+  @@map("users")
 }
 
 model Post {
