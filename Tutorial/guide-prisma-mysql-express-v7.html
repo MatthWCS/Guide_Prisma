@@ -677,10 +677,13 @@ td code {
     <a class="nav-item" href="#express"><span class="nav-step">11</span>Architecture MVC</a>
     <a class="nav-item" href="#models"><span class="nav-step">12</span>Couche Models</a>
     <a class="nav-item" href="#controllers"><span class="nav-step">13</span>Couche Controllers</a>
-    <a class="nav-item" href="#routes"><span class="nav-step">14</span>Couche Routes</a>
-    <a class="nav-item" href="#errors"><span class="nav-step">15</span>Erreurs Prisma</a>
-    <a class="nav-item" href="#studio"><span class="nav-step">16</span>Prisma Studio</a>
-    <a class="nav-item" href="#tips"><span class="nav-step">17</span>Bonnes pratiques</a>
+    <a class="nav-item" href="#schemas"><span class="nav-step">14</span>Schemas Zod</a>
+    <a class="nav-item" href="#validate"><span class="nav-step">15</span>Middleware validate</a>
+    <a class="nav-item" href="#routes"><span class="nav-step">16</span>Couche Routes</a>
+    <a class="nav-item" href="#router"><span class="nav-step">17</span>Router central</a>
+    <a class="nav-item" href="#errors"><span class="nav-step">18</span>Erreurs Prisma</a>
+    <a class="nav-item" href="#studio"><span class="nav-step">19</span>Prisma Studio</a>
+    <a class="nav-item" href="#tips"><span class="nav-step">20</span>Bonnes pratiques</a>
   </div>
 
   <div class="nav-source">
@@ -784,23 +787,33 @@ td code {
     &nbsp;&nbsp;<span class="ft-new">├── generated/</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; └── prisma/</span><span class="ft-note">// ← client généré (hors node_modules)</span><br>
     &nbsp;&nbsp;<span class="ft-file">├── src/</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; ├── index.ts</span><span class="ft-note">// point d'entrée Express</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; ├── server.ts</span><span class="ft-note">// point d'entrée — configure et démarre Express</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; ├── config/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; └── env.ts</span><span class="ft-note">// variables d'env validées et typées</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; ├── lib/</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; │&nbsp;&nbsp; └── prisma.ts</span><span class="ft-note">// instance Prisma Client (singleton)</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; ├── router/</span><span class="ft-note">// ← tout le routing est ici</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── index.ts</span><span class="ft-note">// router principal — agrège avec préfixes /api/*</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; └── routes/</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── index.ts</span><span class="ft-note">// barrel — re-exporte tous les routers</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── userRouter.ts</span><span class="ft-note">// endpoints /api/users</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── postRouter.ts</span><span class="ft-note">// endpoints /api/posts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── tagRouter.ts</span><span class="ft-note">// endpoints /api/tags</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; ├── models/</span><span class="ft-note">// ← couche données : toutes les requêtes Prisma</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── user.model.ts</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── post.model.ts</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; └── tag.model.ts</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; ├── controllers/</span><span class="ft-note">// ← couche métier : valide et orchestre</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; ├── schemas/</span><span class="ft-note">// ← validation Zod + types inférés</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── user.schema.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── post.schema.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; └── tag.schema.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; ├── controllers/</span><span class="ft-note">// ← couche métier : orchestre model + schemas</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── user.controller.ts</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── post.controller.ts</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-new">│&nbsp;&nbsp; │&nbsp;&nbsp; └── tag.controller.ts</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; ├── routes/</span><span class="ft-note">// ← couche HTTP : déclare les endpoints</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── users.ts</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; │&nbsp;&nbsp; ├── posts.ts</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; │&nbsp;&nbsp; └── tags.ts</span><br>
     &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp; └── middleware/</span><br>
-    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── errorHandler.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ├── errorHandler.ts</span><br>
+    &nbsp;&nbsp;&nbsp;&nbsp;<span class="ft-file">│&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; └── validate.ts</span><br>
     &nbsp;&nbsp;<span class="ft-new">├── prisma.config.ts</span><span class="ft-note">// ← nouveau en v7 (config centralisée)</span><br>
     &nbsp;&nbsp;<span class="ft-file">├── .env</span><br>
     &nbsp;&nbsp;<span class="ft-file">├── tsconfig.json</span><br>
@@ -882,7 +895,10 @@ npm install @prisma/client @prisma/adapter-mariadb dotenv
 
 <span class="cmt"># Express et ses types</span>
 npm install express
-npm install @types/express --save-dev</code></pre>
+npm install @types/express --save-dev
+
+<span class="cmt"># Zod — validation et inférence de types</span>
+npm install zod</code></pre>
   </div>
 
   <details class="explain">
@@ -900,6 +916,7 @@ npm install @types/express --save-dev</code></pre>
             <tr><td><code>@prisma/adapter-mariadb</code></td><td>dep</td><td>Le <strong>driver adapter</strong> : fait la connexion TCP réelle avec MySQL. Contient le pool de connexions. Remplace le moteur Rust interne de Prisma v5.</td></tr>
             <tr><td><code>dotenv</code></td><td>dep</td><td>Charge les variables du fichier <code>.env</code> dans <code>process.env</code>.</td></tr>
             <tr><td><code>express</code></td><td>dep</td><td>Serveur HTTP.</td></tr>
+            <tr><td><code>zod</code></td><td>dep</td><td>Validation des données entrantes et inférence de types TypeScript depuis les schémas.</td></tr>
           </tbody>
         </table>
       </div>
@@ -918,7 +935,7 @@ npm install @types/express --save-dev</code></pre>
     <div class="step-badge"><span class="step-num">03</span></div>
     <div>
       <div class="step-title">Configurer ESM</div>
-      <div class="step-subtitle">ECMAScript Modules — le système <code>import/export</code> moderne</div>
+      <div class="step-subtitle">ECMAScript Modules — le système <code>import/export</code> moderne avec <code>NodeNext</code></div>
     </div>
   </div>
 
@@ -937,11 +954,11 @@ npm install @types/express --save-dev</code></pre>
     </div>
     <pre class="code-block"><code>{
   <span class="prp">"compilerOptions"</span>: {
-    <span class="str">"module"</span>:             <span class="str">"ESNext"</span>,
-    <span class="str">"moduleResolution"</span>:   <span class="str">"bundler"</span>,
+    <span class="str">"module"</span>:             <span class="str">"NodeNext"</span>,       <span class="cmt">// ← NodeNext (pas ESNext)</span>
+    <span class="str">"moduleResolution"</span>:   <span class="str">"NodeNext"</span>,       <span class="cmt">// ← doit correspondre au module</span>
     <span class="str">"target"</span>:             <span class="str">"ES2023"</span>,
     <span class="str">"lib"</span>:                [<span class="str">"ES2023"</span>],
-    <span class="str">"types"</span>:              [<span class="str">"node"</span>],        <span class="cmt">// ← indispensable pour process, __dirname…</span>
+    <span class="str">"types"</span>:              [<span class="str">"node"</span>],
     <span class="str">"strict"</span>:             <span class="kw">true</span>,
     <span class="str">"esModuleInterop"</span>:    <span class="kw">true</span>,
     <span class="str">"ignoreDeprecations"</span>: <span class="str">"6.0"</span>
@@ -986,12 +1003,16 @@ npm install @types/express --save-dev</code></pre>
         <span class="hl-line-desc">Déclare quelles API JavaScript natives sont disponibles au runtime (Promise, Map, Set, Array methods…). Doit correspondre au <code>target</code>.</span>
       </div>
       <div class="hl-line">
-        <span class="hl-line-num">"module": "ESNext"</span>
+        <span class="hl-line-num">"module": "NodeNext"</span>
+        <span class="hl-line-desc">Mode de modules pour Node.js moderne avec ESM. TypeScript génère des imports <code>.js</code> natifs compatibles Node.js. <strong>Important :</strong> cette valeur impose que <code>moduleResolution</code> soit aussi <code>NodeNext</code> — les deux sont couplés. Ne pas utiliser <code>ESNext</code> + <code>bundler</code> si tsx est l'exécuteur (pas un bundler).</span>
+      </div>
+      <div class="hl-line">
+        <span class="hl-line-num">"moduleResolution": "NodeNext"</span>
         <span class="hl-line-desc">TypeScript compile vers ESM (utilise <code>import/export</code> dans le JS généré). Sans cette option, il compilerait vers CommonJS (<code>require</code>).</span>
       </div>
       <div class="hl-line">
-        <span class="hl-line-num">"moduleResolution": "bundler"</span>
-        <span class="hl-line-desc">Algorithme de résolution des imports. <code>"bundler"</code> est le mode moderne, compatible avec tsx et esbuild. L'ancien mode <code>"node"</code> ne comprend pas certains imports ESM modernes.</span>
+        <span class="hl-line-num">"moduleResolution": "NodeNext"</span>
+        <span class="hl-line-desc">Algorithme de résolution des imports. Doit obligatoirement correspondre à <code>module</code>. Avec <code>NodeNext</code>, TypeScript exige les extensions <code>.js</code> dans les imports relatifs (<code>import { x } from "./foo.js"</code>) — c'est une règle ESM Node.js.</span>
       </div>
       <div class="hl-line">
         <span class="hl-line-num">"target": "ES2023"</span>
@@ -1424,18 +1445,32 @@ npx prisma migrate reset</code></pre>
 
 <span class="cmt">// ── Driver Adapter : gère la connexion TCP avec MySQL ────────────</span>
 <span class="kw">const</span> adapter = <span class="kw">new</span> PrismaMariaDb({
-  host:            requireEnv(<span class="str">"DATABASE_HOST"</span>),
-  user:            requireEnv(<span class="str">"DATABASE_USER"</span>),
-  password:        requireEnv(<span class="str">"DATABASE_PASSWORD"</span>),
-  database:        requireEnv(<span class="str">"DATABASE_NAME"</span>),
-  port:            Number(process.env.DATABASE_PORT) || <span class="num">3306</span>,
-  connectionLimit: <span class="num">5</span>,   <span class="cmt">// max connexions simultanées dans le pool</span>
+  host:                    requireEnv(<span class="str">"DATABASE_HOST"</span>),
+  user:                    requireEnv(<span class="str">"DATABASE_USER"</span>),
+  password:                requireEnv(<span class="str">"DATABASE_PASSWORD"</span>),
+  database:                requireEnv(<span class="str">"DATABASE_NAME"</span>),
+  port:                    Number(process.env.DATABASE_PORT) || <span class="num">3306</span>,
+  connectionLimit:         <span class="num">5</span>,
+  allowPublicKeyRetrieval: <span class="kw">true</span>,  <span class="cmt">// ← requis avec MySQL 8 + caching_sha2_password</span>
 })
 
 <span class="cmt">// ── Prisma Client : API de requêtes TypeScript ───────────────────</span>
 <span class="kw">const</span> prisma = <span class="kw">new</span> PrismaClient({ adapter })
 
 <span class="kw">export</span> { prisma }</code></pre>
+  </div>
+
+  <div class="callout cw">
+    <span class="callout-ico">⚠️</span>
+    <div>
+      <strong>MySQL 8 — Erreur RSA / pool timeout (code 45028)</strong><br>
+      MySQL 8 utilise par défaut le plugin d'authentification <code>caching_sha2_password</code> qui requiert
+      une clé RSA publique. Le driver mariadb ne peut pas la récupérer automatiquement sans autorisation.<br><br>
+      <strong>Solution rapide (dev) :</strong> ajouter <code>allowPublicKeyRetrieval: true</code> dans l'adapter — c'est déjà inclus dans le code ci-dessus.<br><br>
+      <strong>Solution alternative (prod) :</strong> changer le plugin d'auth de ton utilisateur MySQL vers <code>mysql_native_password</code> qui n'utilise pas RSA :
+      <pre style="margin-top:8px;background:#030608;padding:10px 14px;border-radius:6px;font-family:var(--font-mono);font-size:0.74rem;color:#7ba8c8">ALTER USER 'ton_user'@'localhost' IDENTIFIED WITH mysql_native_password BY 'ton_mot_de_passe';
+FLUSH PRIVILEGES;</pre>
+    </div>
   </div>
 
   <details class="explain">
@@ -1549,8 +1584,8 @@ npx prisma migrate reset</code></pre>
 }
 
 main()
-  .then(<span class="kw">async</span> () =`&gt;` { <span class="kw">await</span> prisma.<span class="fn">$disconnect</span>() })
-  .catch(<span class="kw">async</span> (e) =`&gt;` {
+  .then(<span class="kw">async</span> () =&gt; { <span class="kw">await</span> prisma.<span class="fn">$disconnect</span>() })
+  .catch(<span class="kw">async</span> (e) =&gt; {
     console.error(e)
     <span class="kw">await</span> prisma.<span class="fn">$disconnect</span>()
     process.exit(<span class="num">1</span>)
@@ -1718,7 +1753,7 @@ main()
 ])
 
 <span class="cmt">// ── Transaction interactive (dépendances entre opérations) ────────</span>
-<span class="kw">const</span> result = <span class="kw">await</span> prisma.$transaction(<span class="kw">async</span> (tx) =`&gt;` {
+<span class="kw">const</span> result = <span class="kw">await</span> prisma.$transaction(<span class="kw">async</span> (tx) =&gt; {
   <span class="kw">const</span> user = <span class="kw">await</span> tx.user.create({ data: { email: <span class="str">"x@x.fr"</span> } })
   <span class="kw">const</span> post = <span class="kw">await</span> tx.post.create({
     data: { title: <span class="str">"Post"</span>, author: { connect: { id: user.id } } },
@@ -1739,61 +1774,256 @@ main()
     <div class="step-badge"><span class="step-num">11</span></div>
     <div>
       <div class="step-title">Architecture MVC — Vue d'ensemble</div>
-      <div class="step-subtitle">Route → Controller → Model : séparation claire des responsabilités</div>
+      <div class="step-subtitle">5 couches bien séparées : config · model · controller · route · router · server</div>
     </div>
   </div>
 
   <p class="prose">
-    Mettre toute la logique directement dans les routes est une erreur fréquente qui rend le code
-    difficile à tester et à maintenir. L'architecture <strong>MVC</strong> sépare les responsabilités en trois couches :
+    L'architecture proposée va au-delà du MVC classique en ajoutant deux éléments clés :
+    un <strong>dossier <code>config/</code></strong> pour les variables d'environnement validées,
+    et un <strong>dossier <code>router/</code></strong> qui centralise toutes les routes en un seul point
+    avant de les passer au serveur.
   </p>
 
   <div class="tbl-wrap">
     <table>
-      <thead><tr><th>Couche</th><th>Fichiers</th><th>Responsabilité</th></tr></thead>
+      <thead><tr><th>Couche</th><th>Fichier(s)</th><th>Responsabilité</th></tr></thead>
       <tbody>
-        <tr><td><strong>Route</strong></td><td><code>src/routes/*.ts</code></td><td>Déclare les endpoints HTTP. Ne fait <em>rien</em> d'autre que d'appeler le bon controller. Aucune logique ici.</td></tr>
-        <tr><td><strong>Controller</strong></td><td><code>src/controllers/*.ts</code></td><td>Valide les entrées (<code>req.body</code>, <code>req.params</code>), appelle le model, formate la réponse HTTP. C'est la logique métier.</td></tr>
-        <tr><td><strong>Model</strong></td><td><code>src/models/*.ts</code></td><td>Toutes les requêtes Prisma. Retourne des données brutes. Aucune référence à Express (<code>req</code>, <code>res</code>) ici.</td></tr>
+        <tr><td><strong>Config</strong></td><td><code>src/config/env.ts</code></td><td>Valide et exporte les variables d'env sous forme typée. Une seule source de vérité pour <code>PORT</code>, <code>HOST</code>…</td></tr>
+        <tr><td><strong>Model</strong></td><td><code>src/models/*.ts</code></td><td>Toutes les requêtes Prisma. Aucune référence à Express.</td></tr>
+        <tr><td><strong>Schema</strong></td><td><code>src/schemas/*.ts</code></td><td>Schémas Zod : décrit la forme attendue des données. Génère les types TypeScript automatiquement.</td></tr>
+        <tr><td><strong>Validate</strong></td><td><code>src/middleware/validate.ts</code></td><td>Middleware Express réutilisable. Appelle Zod, retourne 400 si invalide, passe les données nettoyées à <code>next()</code>.</td></tr>
+        <tr><td><strong>Controller</strong></td><td><code>src/controllers/*.ts</code></td><td>Reçoit des données <strong>déjà validées</strong> par le middleware. Appelle le model, renvoie la réponse. Plus de validation ici.</td></tr>
+        <tr><td><strong>Route</strong></td><td><code>src/routes/*.ts</code></td><td>Branche URL → [middleware validate] → controller. Aucune logique.</td></tr>
+        <tr><td><strong>Router</strong></td><td><code>src/router/index.ts</code></td><td>Agrège tous les sous-routers avec leurs préfixes <code>/api/…</code>.</td></tr>
+        <tr><td><strong>Server</strong></td><td><code>src/server.ts</code></td><td>Configure Express (cors, cookies…) et démarre le serveur.</td></tr>
       </tbody>
     </table>
   </div>
 
-  <h3 class="sub">Point d'entrée Express</h3>
+  <h3 class="sub">Installer les dépendances supplémentaires</h3>
   <div class="cf">
     <div class="cf-header">
-      <div class="cf-name">📄 src/index.ts</div>
+      <div class="cf-name">📟 Terminal</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt"># cors : gère les autorisations cross-origin (navigateur ↔ API)</span>
+npm install cors
+npm install @types/cors --save-dev
+
+<span class="cmt"># cookie-parser : parse les cookies HTTP (utile pour l'auth par cookie)</span>
+npm install cookie-parser
+npm install @types/cookie-parser --save-dev</code></pre>
+  </div>
+
+  <h3 class="sub">1 — config/env.ts — variables d'environnement typées</h3>
+  <p class="prose">
+    Plutôt que d'appeler <code>process.env.X</code> partout dans le code,
+    on centralise et valide toutes les variables au démarrage dans un seul fichier.
+    Si une variable est manquante, l'erreur survient immédiatement avec un message clair.
+  </p>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/config/env.ts</div>
       <span class="lt lt-ts">TypeScript</span>
       <button class="copy-btn" onclick="cp(this)">Copier</button>
     </div>
-    <pre class="code-block"><code><span class="kw">import</span> express <span class="kw">from</span> <span class="str">"express"</span>
-<span class="kw">import</span> { usersRouter } <span class="kw">from</span> <span class="str">"./routes/users.js"</span>
-<span class="kw">import</span> { postsRouter }  <span class="kw">from</span> <span class="str">"./routes/posts.js"</span>
-<span class="kw">import</span> { tagsRouter }   <span class="kw">from</span> <span class="str">"./routes/tags.js"</span>
+    <pre class="code-block"><code><span class="kw">import</span> <span class="str">"dotenv/config"</span>
+
+<span class="kw">function</span> <span class="fn">requireEnv</span>(key: <span class="typ">string</span>): <span class="typ">string</span> {
+  <span class="kw">const</span> value = process.env[key]
+  <span class="kw">if</span> (!value) <span class="kw">throw new</span> <span class="typ">Error</span>(<span class="str">`Variable d'env manquante : <span class="op">${key}</span>`</span>)
+  <span class="kw">return</span> value
+}
+
+<span class="cmt">// Toutes les variables validées et typées en un seul endroit</span>
+<span class="kw">export const</span> env = {
+  port:             Number(process.env.PORT)          || <span class="num">3000</span>,
+  host:             process.env.HOST                  || <span class="str">"localhost"</span>,
+  nodeEnv:          process.env.NODE_ENV              || <span class="str">"development"</span>,
+  corsOrigin:       process.env.CORS_ORIGIN           || <span class="str">"http://localhost:5173"</span>,
+  db: {
+    host:     requireEnv(<span class="str">"DATABASE_HOST"</span>),
+    port:     Number(process.env.DATABASE_PORT)       || <span class="num">3306</span>,
+    user:     requireEnv(<span class="str">"DATABASE_USER"</span>),
+    password: requireEnv(<span class="str">"DATABASE_PASSWORD"</span>),
+    name:     requireEnv(<span class="str">"DATABASE_NAME"</span>),
+  },
+} <span class="kw">as const</span></code></pre>
+  </div>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">💡</span> Pourquoi un fichier <code>config/env.ts</code> dédié ?
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      Sans ce fichier, <code>process.env.X</code> est appelé partout dans le code. Problèmes :<br><br>
+      <ul>
+        <li>TypeScript donne <code>string | undefined</code> pour chaque accès — à gérer partout.</li>
+        <li>Si une variable est mal orthographiée (<code>DATABSE_HOST</code>), l'erreur n'arrive qu'à la première requête en prod.</li>
+        <li>Impossible de voir d'un coup d'œil toutes les variables nécessaires au projet.</li>
+      </ul>
+      <br>
+      Avec <code>config/env.ts</code>, la validation se fait <strong>au démarrage</strong>. Si <code>DATABASE_HOST</code> manque dans <code>.env</code>,
+      le serveur refuse de démarrer avec un message explicite — pas de surprise en prod.
+      Et partout dans le code, on importe <code>env.db.host</code> — un <code>string</code> garanti, sans <code>| undefined</code>.
+    </div>
+  </details>
+
+  <p class="prose">Mets à jour <code>src/lib/prisma.ts</code> pour utiliser ce fichier :</p>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/lib/prisma.ts — utilise env plutôt que process.env</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { PrismaMariaDb } <span class="kw">from</span> <span class="str">"@prisma/adapter-mariadb"</span>
+<span class="kw">import</span> { PrismaClient }  <span class="kw">from</span> <span class="str">"../../generated/prisma/client.js"</span>
+<span class="kw">import</span> { env }           <span class="kw">from</span> <span class="str">"../config/env.js"</span>
+
+<span class="kw">const</span> adapter = <span class="kw">new</span> PrismaMariaDb({
+  host:                    env.db.host,
+  user:                    env.db.user,
+  password:                env.db.password,
+  database:                env.db.name,
+  port:                    env.db.port,
+  connectionLimit:         <span class="num">5</span>,
+  allowPublicKeyRetrieval: <span class="kw">true</span>,  <span class="cmt">// requis avec MySQL 8</span>
+})
+
+<span class="kw">export const</span> prisma = <span class="kw">new</span> PrismaClient({ adapter })</code></pre>
+  </div>
+
+  <h3 class="sub">2 — router/routes/index.ts — barrel de tous les sous-routers</h3>
+  <p class="prose">
+    Ce fichier re-exporte tous les routers de ressources depuis un seul endroit.
+    Le <code>router/index.ts</code> n'a plus qu'un seul import à faire.
+  </p>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/router/routes/index.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt">// Barrel export : re-exporte tous les sous-routers depuis un seul fichier</span>
+<span class="cmt">// Ajouter ici chaque nouvelle ressource</span>
+<span class="kw">export</span> { usersRouter }  <span class="kw">from</span> <span class="str">"../../routes/users.js"</span>
+<span class="kw">export</span> { postsRouter }  <span class="kw">from</span> <span class="str">"../../routes/posts.js"</span>
+<span class="kw">export</span> { tagsRouter }   <span class="kw">from</span> <span class="str">"../../routes/tags.js"</span></code></pre>
+  </div>
+
+  <h3 class="sub">3 — router/index.ts — router central</h3>
+  <p class="prose">
+    Un seul <code>Router</code> Express qui reçoit tous les sous-routers avec leurs préfixes.
+    Le serveur n'a qu'à monter ce router unique — il ne connaît plus chaque ressource individuellement.
+  </p>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/router/index.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { usersRouter, postsRouter, tagsRouter } <span class="kw">from</span> <span class="str">"./routes/index.js"</span>
+
+<span class="kw">export const</span> router = Router()
+
+<span class="cmt">// Tous les préfixes /api/* sont définis ici, nulle part ailleurs</span>
+router.use(<span class="str">"/api/users"</span>, usersRouter)
+router.use(<span class="str">"/api/posts"</span>, postsRouter)
+router.use(<span class="str">"/api/tags"</span>,  tagsRouter)
+
+<span class="cmt">// Ajouter ici chaque nouvelle ressource :</span>
+<span class="cmt">// router.use("/api/auth", authRouter)</span></code></pre>
+  </div>
+
+  <h3 class="sub">4 — server.ts — point d'entrée du serveur</h3>
+  <p class="prose">
+    <code>server.ts</code> configure Express (middlewares globaux, cors, cookies) et démarre le serveur.
+    Il ne sait rien des routes ni des contrôleurs — il délègue tout au <code>router</code>.
+  </p>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/server.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> cors         <span class="kw">from</span> <span class="str">"cors"</span>
+<span class="kw">import</span> cookieParser <span class="kw">from</span> <span class="str">"cookie-parser"</span>
+<span class="kw">import</span> express      <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { env }      <span class="kw">from</span> <span class="str">"./config/env.js"</span>
+<span class="kw">import</span> { router }   <span class="kw">from</span> <span class="str">"./router/index.js"</span>
 <span class="kw">import</span> { errorHandler } <span class="kw">from</span> <span class="str">"./middleware/errorHandler.js"</span>
 
-<span class="kw">const</span> app  = express()
-<span class="kw">const</span> PORT = Number(process.env.PORT) || <span class="num">3000</span>
+<span class="kw">const</span> server = express()
 
-app.use(express.json())
+<span class="cmt">// ── Middlewares globaux ──────────────────────────────────────────</span>
+server.use(cors({
+  origin:      env.corsOrigin,  <span class="cmt">// ex: "http://localhost:5173" (Vite)</span>
+  credentials: <span class="kw">true</span>,           <span class="cmt">// autoriser les cookies cross-origin</span>
+}))
+server.use(express.json())
+server.use(express.urlencoded({ extended: <span class="kw">true</span> }))
+server.use(cookieParser())
 
-<span class="cmt">// Routes — chaque router gère son préfixe</span>
-app.use(<span class="str">"/api/users"</span>, usersRouter)
-app.use(<span class="str">"/api/posts"</span>,  postsRouter)
-app.use(<span class="str">"/api/tags"</span>,   tagsRouter)
-
-<span class="cmt">// Healthcheck</span>
-app.get(<span class="str">"/health"</span>, (_req, res) =`&gt;` {
+<span class="cmt">// ── Healthcheck ──────────────────────────────────────────────────</span>
+server.get(<span class="str">"/health"</span>, (_req, res) =&gt; {
   res.json({ status: <span class="str">"ok"</span>, timestamp: <span class="kw">new</span> Date().toISOString() })
 })
 
-<span class="cmt">// 404 et gestionnaire d'erreurs global (toujours en dernier)</span>
-app.use((_req, res) =`&gt;` res.status(<span class="num">404</span>).json({ error: <span class="str">"Route introuvable"</span> }))
-app.use(errorHandler)
+<span class="cmt">// ── Router central (toutes les routes /api/*) ────────────────────</span>
+server.use(router)
 
-app.listen(PORT, () =`&gt;`
-  console.log(<span class="str">`🚀 Serveur sur http://localhost:<span class="op">${PORT}</span>`</span>)
-)</code></pre>
+<span class="cmt">// ── 404 + erreurs (toujours en dernier) ─────────────────────────</span>
+server.use((_req, res) =&gt; res.status(<span class="num">404</span>).json({ error: <span class="str">"Route introuvable"</span> }))
+server.use(errorHandler)
+
+<span class="cmt">// ── Démarrage ────────────────────────────────────────────────────</span>
+server.listen(env.port, env.host, () =&gt; {
+  console.log(<span class="str">`🚀 Serveur sur http://<span class="op">${env.host}</span>:<span class="op">${env.port}</span>`</span>)
+})</code></pre>
+  </div>
+
+  <p class="prose">Mets à jour le script <code>dev</code> dans <code>package.json</code> pour pointer sur <code>server.ts</code> :</p>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 package.json — scripts</div>
+      <span class="lt lt-json">json</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code>{
+  <span class="prp">"scripts"</span>: {
+    <span class="prp">"dev"</span>:         <span class="str">"tsx watch src/server.ts"</span>,   <span class="cmt">// ← server.ts (plus index.ts)</span>
+    <span class="prp">"build"</span>:       <span class="str">"tsc"</span>,
+    <span class="prp">"start"</span>:       <span class="str">"node dist/server.js"</span>,
+    <span class="prp">"db:migrate"</span>:  <span class="str">"prisma migrate dev"</span>,
+    <span class="prp">"db:generate"</span>: <span class="str">"prisma generate"</span>,
+    <span class="prp">"db:studio"</span>:   <span class="str">"prisma studio"</span>
+  }
+}</code></pre>
+  </div>
+
+  <p class="prose">Et ajoute la variable <code>CORS_ORIGIN</code> dans <code>.env</code> :</p>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">🔒 .env — ajouter</div>
+      <span class="lt lt-env">env</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code>HOST=localhost
+CORS_ORIGIN=http://localhost:5173</code></pre>
+  </div>
+
+  <h3 class="sub">Créer les dossiers manquants</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📟 Terminal</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code>mkdir -p src/config src/router/routes src/models src/controllers src/routes src/middleware src/lib</code></pre>
   </div>
 </section>
 
@@ -1831,7 +2061,7 @@ app.listen(PORT, () =`&gt;`
 
 <span class="kw">export const</span> UserModel = {
 
-  findAll: (page: <span class="typ">number</span>, limit: <span class="typ">number</span>) =`&gt;` {
+  findAll: (page: <span class="typ">number</span>, limit: <span class="typ">number</span>) =&gt; {
     <span class="kw">const</span> skip = (page - <span class="num">1</span>) * limit
     <span class="kw">return</span> prisma.$transaction([
       prisma.user.findMany({
@@ -1843,22 +2073,22 @@ app.listen(PORT, () =`&gt;`
     ])
   },
 
-  findById: (id: <span class="typ">number</span>) =`&gt;`
+  findById: (id: <span class="typ">number</span>) =&gt;
     prisma.user.findUnique({
       where:   { id },
       select:  { ...userSelect, posts: { select: { id: <span class="kw">true</span>, title: <span class="kw">true</span>, published: <span class="kw">true</span> } } },
     }),
 
-  findByEmail: (email: <span class="typ">string</span>) =>
+  findByEmail: (email: <span class="typ">string</span>) =&gt;
     prisma.user.findUnique({ where: { email } }),
 
-  create: (data: { email: <span class="typ">string</span>; name?: <span class="typ">string</span>; password: <span class="typ">string</span> }) =`&gt;`
+  create: (data: { email: <span class="typ">string</span>; name?: <span class="typ">string</span>; password: <span class="typ">string</span> }) =&gt;
     prisma.user.create({ data, select: userSelect }),
 
-  update: (id: <span class="typ">number</span>, data: { name?: <span class="typ">string</span> }) =>
+  update: (id: <span class="typ">number</span>, data: { name?: <span class="typ">string</span> }) =&gt;
     prisma.user.update({ where: { id }, data, select: userSelect }),
 
-  remove: (id: <span class="typ">number</span>) =`&gt;`
+  remove: (id: <span class="typ">number</span>) =&gt;
     prisma.user.delete({ where: { id } }),
 
 }</code></pre>
@@ -1895,7 +2125,7 @@ app.listen(PORT, () =`&gt;`
 
 <span class="kw">export const</span> PostModel = {
 
-  findAll: (page: <span class="typ">number</span>, limit: <span class="typ">number</span>, published?: <span class="typ">boolean</span>) => {
+  findAll: (page: <span class="typ">number</span>, limit: <span class="typ">number</span>, published?: <span class="typ">boolean</span>) =&gt; {
     <span class="kw">const</span> skip  = (page - <span class="num">1</span>) * limit
     <span class="kw">const</span> where = published !== undefined ? { published } : {}
     <span class="kw">return</span> prisma.$transaction([
@@ -1908,39 +2138,39 @@ app.listen(PORT, () =`&gt;`
     ])
   },
 
-  findById: (id: <span class="typ">number</span>) =>
+  findById: (id: <span class="typ">number</span>) =&gt;
     prisma.post.findUnique({ where: { id }, include: postInclude }),
 
-  findBySlug: (slug: <span class="typ">string</span>) =>
+  findBySlug: (slug: <span class="typ">string</span>) =&gt;
     prisma.post.findUnique({ where: { slug }, include: postInclude }),
 
-  create: ({ tagIds, ...data }: PostCreateInput) =>
+  create: ({ tagIds, ...data }: PostCreateInput) =&gt;
     prisma.post.create({
       data: {
         ...data,
         tags: tagIds?.length
-          ? { connect: tagIds.map((id) => ({ id })) }
+          ? { connect: tagIds.map((id) =&gt; ({ id })) }
           : undefined,
       },
       include: postInclude,
     }),
 
-  update: (id: <span class="typ">number</span>, { tagIds, ...data }: PostUpdateInput) =>
+  update: (id: <span class="typ">number</span>, { tagIds, ...data }: PostUpdateInput) =&gt;
     prisma.post.update({
       where: { id },
       data: {
         ...data,
         tags: tagIds !== undefined
-          ? { set: tagIds.map((id) => ({ id })) }  <span class="cmt">// set remplace les tags existants</span>
+          ? { set: tagIds.map((id) =&gt; ({ id })) }  <span class="cmt">// set remplace les tags existants</span>
           : undefined,
       },
       include: postInclude,
     }),
 
-  remove: (id: <span class="typ">number</span>) =>
+  remove: (id: <span class="typ">number</span>) =&gt;
     prisma.post.delete({ where: { id } }),
 
-  countByAuthor: (authorId: <span class="typ">number</span>) =>
+  countByAuthor: (authorId: <span class="typ">number</span>) =&gt;
     prisma.post.count({ where: { authorId } }),
 
 }</code></pre>
@@ -1957,31 +2187,31 @@ app.listen(PORT, () =`&gt;`
 
 <span class="kw">export const</span> TagModel = {
 
-  findAll: () =>
+  findAll: () =&gt;
     prisma.tag.findMany({
       orderBy: { name: <span class="str">"asc"</span> },
       include: { _count: { select: { posts: <span class="kw">true</span> } } },  <span class="cmt">// nb de posts par tag</span>
     }),
 
-  findById: (id: <span class="typ">number</span>) =>
+  findById: (id: <span class="typ">number</span>) =&gt;
     prisma.tag.findUnique({
       where:   { id },
       include: { posts: { select: { id: <span class="kw">true</span>, title: <span class="kw">true</span>, published: <span class="kw">true</span> } } },
     }),
 
-  findByName: (name: <span class="typ">string</span>) =>
+  findByName: (name: <span class="typ">string</span>) =&gt;
     prisma.tag.findUnique({ where: { name } }),
 
-  create: (name: <span class="typ">string</span>) =>
+  create: (name: <span class="typ">string</span>) =&gt;
     prisma.tag.create({ data: { name } }),
 
-  update: (id: <span class="typ">number</span>, name: <span class="typ">string</span>) =>
+  update: (id: <span class="typ">number</span>, name: <span class="typ">string</span>) =&gt;
     prisma.tag.update({ where: { id }, data: { name } }),
 
-  remove: (id: <span class="typ">number</span>) =>
+  remove: (id: <span class="typ">number</span>) =&gt;
     prisma.tag.delete({ where: { id } }),
 
-  upsert: (name: <span class="typ">string</span>) =>
+  upsert: (name: <span class="typ">string</span>) =&gt;
     prisma.tag.upsert({
       where:  { name },
       create: { name },
@@ -1998,14 +2228,15 @@ app.listen(PORT, () =`&gt;`
     <div class="step-badge"><span class="step-num">13</span></div>
     <div>
       <div class="step-title">Couche Controllers — Logique métier</div>
-      <div class="step-subtitle">Validation des entrées, appel du model, formatage de la réponse</div>
+      <div class="step-subtitle">Reçoit des données déjà validées, appelle le model, renvoie la réponse</div>
     </div>
   </div>
 
   <p class="prose">
-    Le controller est le chef d'orchestre : il reçoit la requête HTTP d'Express, <strong>valide les données</strong>,
-    appelle le model, puis renvoie la réponse. Il ne contient aucune requête Prisma directe.
-    En cas d'erreur, il appelle <code>next(err)</code> pour déléguer au middleware d'erreur.
+    Avec Zod intégré, le controller <strong>ne valide plus rien lui-même</strong>.
+    La validation est faite en amont par le middleware <code>validate</code> (section 15).
+    Le controller reçoit un <code>req.body</code> déjà propre et typé, et se concentre
+    uniquement sur l'appel du model et la réponse HTTP.
   </p>
 
   <h3 class="sub">user.controller.ts</h3>
@@ -2017,10 +2248,14 @@ app.listen(PORT, () =`&gt;`
     </div>
     <pre class="code-block"><code><span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">"express"</span>
 <span class="kw">import</span> { UserModel } <span class="kw">from</span> <span class="str">"../models/user.model.js"</span>
+<span class="kw">import</span> { type CreateUserInput, type UpdateUserInput } <span class="kw">from</span> <span class="str">"../schemas/user.schema.js"</span>
+
+<span class="cmt">// Type helper pour typer req.params proprement avec NodeNext</span>
+<span class="kw">type</span> IdParam = { id: <span class="typ">string</span> }
 
 <span class="kw">export const</span> UserController = {
 
-  getAll: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  getAll: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> page  = Math.max(<span class="num">1</span>, Number(req.query.page)  || <span class="num">1</span>)
       <span class="kw">const</span> limit = Math.min(<span class="num">100</span>, Number(req.query.limit) || <span class="num">10</span>)
@@ -2029,7 +2264,7 @@ app.listen(PORT, () =`&gt;`
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  getOne: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  getOne: <span class="kw">async</span> (req: Request<<span class="typ">IdParam</span>&gt;, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> id = parseInt(req.params.id)
       <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
@@ -2039,27 +2274,27 @@ app.listen(PORT, () =`&gt;`
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  create: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  <span class="cmt">// req.body est déjà validé et typé CreateUserInput par le middleware validate</span>
+  create: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
-      <span class="kw">const</span> { email, name, password } = req.body
-      <span class="kw">if</span> (!email || !password)
-        <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"email et password sont requis"</span> })
-      <span class="cmt">// Note : hasher le password ici avec bcrypt avant de passer au model</span>
-      <span class="kw">const</span> user = <span class="kw">await</span> UserModel.create({ email, name, password })
+      <span class="kw">const</span> data = req.body <span class="kw">as</span> CreateUserInput
+      <span class="cmt">// Note : hasher data.password avec bcrypt avant de passer au model</span>
+      <span class="kw">const</span> user = <span class="kw">await</span> UserModel.create(data)
       res.status(<span class="num">201</span>).json(user)
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  update: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  <span class="cmt">// req.body est déjà validé et typé UpdateUserInput par le middleware validate</span>
+  update: <span class="kw">async</span> (req: Request<<span class="typ">IdParam</span>&gt;, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> id = parseInt(req.params.id)
       <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
-      <span class="kw">const</span> user = <span class="kw">await</span> UserModel.update(id, { name: req.body.name })
+      <span class="kw">const</span> user = <span class="kw">await</span> UserModel.update(id, req.body <span class="kw">as</span> UpdateUserInput)
       res.json(user)
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  remove: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  remove: <span class="kw">async</span> (req: Request<<span class="typ">IdParam</span>&gt;, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> id = parseInt(req.params.id)
       <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
@@ -2080,22 +2315,24 @@ app.listen(PORT, () =`&gt;`
     </div>
     <pre class="code-block"><code><span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">"express"</span>
 <span class="kw">import</span> { PostModel } <span class="kw">from</span> <span class="str">"../models/post.model.js"</span>
+<span class="kw">import</span> { type CreatePostInput, type UpdatePostInput } <span class="kw">from</span> <span class="str">"../schemas/post.schema.js"</span>
+
+<span class="kw">type</span> IdParam = { id: <span class="typ">string</span> }
 
 <span class="kw">export const</span> PostController = {
 
-  getAll: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  getAll: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> page      = Math.max(<span class="num">1</span>, Number(req.query.page)  || <span class="num">1</span>)
       <span class="kw">const</span> limit     = Math.min(<span class="num">100</span>, Number(req.query.limit) || <span class="num">10</span>)
       <span class="kw">const</span> published = req.query.published !== undefined
-        ? req.query.published === <span class="str">"true"</span>
-        : undefined
+        ? req.query.published === <span class="str">"true"</span> : undefined
       <span class="kw">const</span> [data, total] = <span class="kw">await</span> PostModel.findAll(page, limit, published)
       res.json({ data, pagination: { page, limit, total, pages: Math.ceil(total / limit) } })
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  getOne: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  getOne: <span class="kw">async</span> (req: Request<<span class="typ">IdParam</span>&gt;, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> id = parseInt(req.params.id)
       <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
@@ -2105,31 +2342,25 @@ app.listen(PORT, () =`&gt;`
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  create: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  <span class="cmt">// req.body déjà validé et typé CreatePostInput par le middleware validate</span>
+  create: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
-      <span class="kw">const</span> { title, content, slug, authorId, tagIds } = req.body
-      <span class="kw">if</span> (!title || !slug || !authorId)
-        <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"title, slug et authorId sont requis"</span> })
-      <span class="kw">const</span> post = <span class="kw">await</span> PostModel.create({
-        title, content, slug,
-        authorId: Number(authorId),
-        tagIds: tagIds ? (tagIds <span class="kw">as</span> <span class="typ">number</span>[]) : [],
-      })
+      <span class="kw">const</span> post = <span class="kw">await</span> PostModel.create(req.body <span class="kw">as</span> CreatePostInput)
       res.status(<span class="num">201</span>).json(post)
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  update: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  <span class="cmt">// req.body déjà validé et typé UpdatePostInput par le middleware validate</span>
+  update: <span class="kw">async</span> (req: Request<<span class="typ">IdParam</span>&gt;, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> id = parseInt(req.params.id)
       <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
-      <span class="kw">const</span> { title, content, published, tagIds } = req.body
-      <span class="kw">const</span> post = <span class="kw">await</span> PostModel.update(id, { title, content, published, tagIds })
+      <span class="kw">const</span> post = <span class="kw">await</span> PostModel.update(id, req.body <span class="kw">as</span> UpdatePostInput)
       res.json(post)
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  remove: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  remove: <span class="kw">async</span> (req: Request<<span class="typ">IdParam</span>&gt;, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> id = parseInt(req.params.id)
       <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
@@ -2150,17 +2381,19 @@ app.listen(PORT, () =`&gt;`
     </div>
     <pre class="code-block"><code><span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">"express"</span>
 <span class="kw">import</span> { TagModel } <span class="kw">from</span> <span class="str">"../models/tag.model.js"</span>
+<span class="kw">import</span> { type CreateTagInput, type UpdateTagInput } <span class="kw">from</span> <span class="str">"../schemas/tag.schema.js"</span>
+
+<span class="kw">type</span> IdParam = { id: <span class="typ">string</span> }
 
 <span class="kw">export const</span> TagController = {
 
-  getAll: <span class="kw">async</span> (_req: Request, res: Response, next: NextFunction) => {
+  getAll: <span class="kw">async</span> (_req: Request, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
-      <span class="kw">const</span> tags = <span class="kw">await</span> TagModel.findAll()
-      res.json(tags)
+      res.json(<span class="kw">await</span> TagModel.findAll())
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  getOne: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  getOne: <span class="kw">async</span> (req: Request<<span class="typ">IdParam</span>&gt;, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> id = parseInt(req.params.id)
       <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
@@ -2170,26 +2403,25 @@ app.listen(PORT, () =`&gt;`
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  create: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  <span class="cmt">// req.body déjà validé et typé CreateTagInput par le middleware validate</span>
+  create: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
-      <span class="kw">const</span> { name } = req.body
-      <span class="kw">if</span> (!name) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"name est requis"</span> })
-      <span class="kw">const</span> tag = <span class="kw">await</span> TagModel.create(String(name))
-      res.status(<span class="num">201</span>).json(tag)
+      <span class="kw">const</span> { name } = req.body <span class="kw">as</span> CreateTagInput
+      res.status(<span class="num">201</span>).json(<span class="kw">await</span> TagModel.create(name))
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  update: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  <span class="cmt">// req.body déjà validé et typé UpdateTagInput par le middleware validate</span>
+  update: <span class="kw">async</span> (req: Request<<span class="typ">IdParam</span>&gt;, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> id = parseInt(req.params.id)
       <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
-      <span class="kw">if</span> (!req.body.name) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"name est requis"</span> })
-      <span class="kw">const</span> tag = <span class="kw">await</span> TagModel.update(id, String(req.body.name))
-      res.json(tag)
+      <span class="kw">const</span> { name } = req.body <span class="kw">as</span> UpdateTagInput
+      res.json(<span class="kw">await</span> TagModel.update(id, name))
     } <span class="kw">catch</span> (err) { next(err) }
   },
 
-  remove: <span class="kw">async</span> (req: Request, res: Response, next: NextFunction) => {
+  remove: <span class="kw">async</span> (req: Request<<span class="typ">IdParam</span>&gt;, res: Response, next: NextFunction) =&gt; {
     <span class="kw">try</span> {
       <span class="kw">const</span> id = parseInt(req.params.id)
       <span class="kw">if</span> (isNaN(id)) <span class="kw">return</span> res.status(<span class="num">400</span>).json({ error: <span class="str">"ID invalide"</span> })
@@ -2200,118 +2432,422 @@ app.listen(PORT, () =`&gt;`
 
 }</code></pre>
   </div>
+
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">🔍</span> Pourquoi <code>Request&lt;IdParam&gt;</code> corrige les soulignements rouges ?
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      Le type générique <code>Request</code> d'Express accepte 4 paramètres :
+      <code>Request&lt;Params, ResBody, ReqBody, Query&gt;</code>.<br><br>
+      Avec <code>moduleResolution: NodeNext</code>, TypeScript est plus strict et considère que
+      <code>req.params</code> est de type <code>ParamsDictionary</code> — ce qui rend <code>req.params.id</code>
+      de type <code>string | undefined</code>, pas <code>string</code>. D'où les soulignements.<br><br>
+      En passant <code>Request&lt;{ id: string }&gt;</code>, on déclare explicitement que ce handler
+      recevra toujours un paramètre <code>id</code> de type <code>string</code>. TypeScript est satisfait
+      et les soulignements disparaissent.
+    </div>
+  </details>
 </section>
 
-<!-- ═══ 14 — ROUTES ═══ -->
-<section class="step-section" id="routes">
+<!-- ═══ 14 — SCHEMAS ZOD ═══ -->
+<section class="step-section" id="schemas">
   <div class="step-header">
     <div class="step-badge"><span class="step-num">14</span></div>
     <div>
-      <div class="step-title">Couche Routes — Endpoints HTTP</div>
-      <div class="step-subtitle">Les routes ne font qu'une chose : brancher une URL sur un controller</div>
+      <div class="step-title">Schemas Zod — Validation &amp; Types</div>
+      <div class="step-subtitle">Une seule définition pour la validation runtime et les types TypeScript</div>
     </div>
   </div>
 
   <p class="prose">
-    Une route ne doit contenir <strong>aucune logique</strong> — juste la déclaration de l'endpoint et l'appel
-    au bon handler du controller. Ce fichier sert de table de routage lisible en un coup d'œil.
+    Chaque ressource a son fichier de schémas. On y définit la forme attendue des données pour
+    chaque opération (<code>create</code>, <code>update</code>…). Zod génère automatiquement les types
+    TypeScript via <code>z.infer&lt;&gt;</code> — tu n'écris jamais le même type deux fois.
+  </p>
+
+  <h3 class="sub">user.schema.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/schemas/user.schema.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">"zod"</span>
+
+<span class="cmt">// Schéma de création — tous les champs requis sauf name</span>
+<span class="kw">export const</span> createUserSchema = z.object({
+  email:    z.string().email(<span class="str">"Email invalide"</span>),
+  name:     z.string().min(<span class="num">2</span>, <span class="str">"Min 2 caractères"</span>).max(<span class="num">100</span>).optional(),
+  password: z.string().min(<span class="num">8</span>, <span class="str">"Min 8 caractères"</span>),
+})
+
+<span class="cmt">// Schéma de modification — tous les champs optionnels (PATCH)</span>
+<span class="kw">export const</span> updateUserSchema = z.object({
+  name: z.string().min(<span class="num">2</span>).max(<span class="num">100</span>).optional(),
+})
+
+<span class="cmt">// Types inférés automatiquement depuis les schémas</span>
+<span class="kw">export type</span> CreateUserInput = z.infer<<span class="kw">typeof</span> createUserSchema&gt;
+<span class="kw">export type</span> UpdateUserInput = z.infer<<span class="kw">typeof</span> updateUserSchema&gt;
+
+<span class="cmt">// Exemple de ce que TypeScript infère :</span>
+<span class="cmt">// CreateUserInput = { email: string; name?: string; password: string }</span>
+<span class="cmt">// UpdateUserInput = { name?: string }</span></code></pre>
+  </div>
+
+  <h3 class="sub">post.schema.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/schemas/post.schema.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">"zod"</span>
+
+<span class="kw">export const</span> createPostSchema = z.object({
+  title:    z.string().min(<span class="num">1</span>, <span class="str">"Titre requis"</span>).max(<span class="num">255</span>),
+  slug:     z.string()
+              .min(<span class="num">1</span>)
+              .max(<span class="num">255</span>)
+              .regex(<span class="str">/^[a-z0-9-]+$/</span>, <span class="str">"Slug invalide (minuscules, chiffres, tirets)"</span>),
+  content:  z.string().optional(),
+  authorId: z.number(<span class="str">"authorId doit être un nombre"</span>).int().positive(),
+  tagIds:   z.array(z.number().int().positive()).optional().default([]),
+})
+
+<span class="kw">export const</span> updatePostSchema = z.object({
+  title:     z.string().min(<span class="num">1</span>).max(<span class="num">255</span>).optional(),
+  content:   z.string().optional(),
+  published: z.boolean().optional(),
+  tagIds:    z.array(z.number().int().positive()).optional(),
+})
+
+<span class="kw">export type</span> CreatePostInput = z.infer<<span class="kw">typeof</span> createPostSchema&gt;
+<span class="kw">export type</span> UpdatePostInput = z.infer<<span class="kw">typeof</span> updatePostSchema&gt;</code></pre>
+  </div>
+
+  <h3 class="sub">tag.schema.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/schemas/tag.schema.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { z } <span class="kw">from</span> <span class="str">"zod"</span>
+
+<span class="kw">export const</span> createTagSchema = z.object({
+  name: z.string()
+          .min(<span class="num">1</span>, <span class="str">"Nom requis"</span>)
+          .max(<span class="num">50</span>, <span class="str">"Max 50 caractères"</span>)
+          .trim(),               <span class="cmt">// supprime les espaces avant/après</span>
+})
+
+<span class="kw">export const</span> updateTagSchema = z.object({
+  name: z.string().min(<span class="num">1</span>).max(<span class="num">50</span>).trim(),
+})
+
+<span class="kw">export type</span> CreateTagInput = z.infer<<span class="kw">typeof</span> createTagSchema&gt;
+<span class="kw">export type</span> UpdateTagInput = z.infer<<span class="kw">typeof</span> updateTagSchema&gt;</code></pre>
+  </div>
+</section>
+
+<!-- ═══ 15 — MIDDLEWARE VALIDATE ═══ -->
+<section class="step-section" id="validate">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">15</span></div>
+    <div>
+      <div class="step-title">Middleware validate — Le pont entre Zod et Express</div>
+      <div class="step-subtitle">Valide <code>req.body</code> avant que la requête n'atteigne le controller</div>
+    </div>
+  </div>
+
+  <p class="prose">
+    Ce middleware générique accepte n'importe quel schéma Zod et renvoie une réponse <code>400</code>
+    détaillée si les données sont invalides. Si tout est bon, il remplace <code>req.body</code>
+    par les données <strong>nettoyées</strong> (espaces supprimés, valeurs par défaut appliquées, coercitions faites)
+    avant de passer au controller.
   </p>
 
   <div class="cf">
     <div class="cf-header">
-      <div class="cf-name">📄 src/routes/users.ts</div>
+      <div class="cf-name">📄 src/middleware/validate.ts</div>
       <span class="lt lt-ts">TypeScript</span>
       <button class="copy-btn" onclick="cp(this)">Copier</button>
     </div>
-    <pre class="code-block"><code><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">"express"</span>
-<span class="kw">import</span> { UserController } <span class="kw">from</span> <span class="str">"../controllers/user.controller.js"</span>
+    <pre class="code-block"><code><span class="kw">import</span> { Request, Response, NextFunction } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { ZodSchema } <span class="kw">from</span> <span class="str">"zod"</span>
 
-<span class="kw">export const</span> usersRouter = Router()
+<span class="cmt">// validate(schema) retourne un middleware Express prêt à l'emploi</span>
+<span class="kw">export function</span> validate(schema: ZodSchema) {
+  <span class="kw">return</span> (req: Request, res: Response, next: NextFunction) =&gt; {
+    <span class="kw">const</span> result = schema.safeParse(req.body)
 
-<span class="cmt">// GET    /api/users          → liste paginée</span>
-<span class="cmt">// GET    /api/users/:id      → un utilisateur avec ses posts</span>
-<span class="cmt">// POST   /api/users          → créer un utilisateur</span>
-<span class="cmt">// PATCH  /api/users/:id      → modifier le nom</span>
-<span class="cmt">// DELETE /api/users/:id      → supprimer</span>
+    <span class="kw">if</span> (!result.success) {
+      <span class="kw">return</span> res.status(<span class="num">400</span>).json({
+        error:   <span class="str">"Données invalides"</span>,
+        details: result.error.flatten().fieldErrors,
+        <span class="cmt">// Exemple de réponse :</span>
+        <span class="cmt">// { error: "Données invalides",</span>
+        <span class="cmt">//   details: { email: ["Email invalide"], password: ["Min 8 caractères"] } }</span>
+      })
+    }
 
-usersRouter.get   (<span class="str">"/"</span>,    UserController.getAll)
-usersRouter.get   (<span class="str">"/:id"</span>, UserController.getOne)
-usersRouter.post  (<span class="str">"/"</span>,    UserController.create)
-usersRouter.patch (<span class="str">"/:id"</span>, UserController.update)
-usersRouter.delete(<span class="str">"/:id"</span>, UserController.remove)</code></pre>
+    <span class="cmt">// On remplace req.body par les données nettoyées par Zod :</span>
+    <span class="cmt">// - .trim() appliqué, valeurs par défaut injectées, types coercés</span>
+    req.body = result.data
+    next()
+  }
+}</code></pre>
   </div>
 
-  <div class="cf">
-    <div class="cf-header">
-      <div class="cf-name">📄 src/routes/posts.ts</div>
-      <span class="lt lt-ts">TypeScript</span>
-      <button class="copy-btn" onclick="cp(this)">Copier</button>
+  <details class="explain">
+    <summary class="explain-header">
+      <span class="explain-icon">🔍</span> Que se passe-t-il exactement lors d'une requête invalide ?
+      <span class="explain-arrow">▼</span>
+    </summary>
+    <div class="explain-body">
+      Imaginons une requête <code>POST /api/users</code> avec ce body :
+      <pre style="margin:10px 0;background:#030608;padding:10px 14px;border-radius:6px;font-family:var(--font-mono);font-size:0.74rem;color:#7ba8c8">{ "email": "pas-un-email", "password": "court" }</pre>
+      Le middleware <code>validate(createUserSchema)</code> appelle <code>safeParse()</code>. Zod détecte deux erreurs et retourne immédiatement :<br><br>
+      <pre style="margin:10px 0;background:#030608;padding:10px 14px;border-radius:6px;font-family:var(--font-mono);font-size:0.74rem;color:#7ba8c8">{
+  "error": "Données invalides",
+  "details": {
+    "email":    ["Email invalide"],
+    "password": ["Min 8 caractères"]
+  }
+}</pre>
+      Le controller <code>UserController.create</code> n'est <strong>jamais appelé</strong>. La requête s'arrête dans le middleware.
+      <br><br>
+      Si les données sont valides, <code>result.data</code> contient les données nettoyées. Par exemple si l'utilisateur a envoyé <code>"  alice@example.com  "</code>, Zod avec <code>.trim()</code> retourne <code>"alice@example.com"</code> dans <code>req.body</code>.
     </div>
-    <pre class="code-block"><code><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">"express"</span>
-<span class="kw">import</span> { PostController } <span class="kw">from</span> <span class="str">"../controllers/post.controller.js"</span>
+  </details>
+</section>
 
-<span class="kw">export const</span> postsRouter = Router()
-
-<span class="cmt">// GET    /api/posts?page=1&amp;limit=10&amp;published=true → liste filtrée</span>
-<span class="cmt">// GET    /api/posts/:id                             → un post avec auteur + tags</span>
-<span class="cmt">// POST   /api/posts                                 → créer un post</span>
-<span class="cmt">// PATCH  /api/posts/:id                             → modifier (titre, contenu, tags…)</span>
-<span class="cmt">// DELETE /api/posts/:id                             → supprimer</span>
-
-postsRouter.get   (<span class="str">"/"</span>,    PostController.getAll)
-postsRouter.get   (<span class="str">"/:id"</span>, PostController.getOne)
-postsRouter.post  (<span class="str">"/"</span>,    PostController.create)
-postsRouter.patch (<span class="str">"/:id"</span>, PostController.update)
-postsRouter.delete(<span class="str">"/:id"</span>, PostController.remove)</code></pre>
+<!-- ═══ 16 — ROUTES ═══ -->
+<section class="step-section" id="routes">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">16</span></div>
+    <div>
+      <div class="step-title">Couche Routes — Endpoints HTTP</div>
+      <div class="step-subtitle">src/router/routes/ — un fichier par ressource + un barrel</div>
+    </div>
   </div>
 
+  <p class="prose">
+    Les fichiers de routes vivent dans <code>src/router/routes/</code>. Chaque fichier déclare
+    les endpoints d'une ressource et y branche <code>validate</code> et le controller.
+    Un <code>index.ts</code> les re-exporte tous depuis un seul endroit.
+  </p>
+
+  <h3 class="sub">router/routes/userRouter.ts</h3>
   <div class="cf">
     <div class="cf-header">
-      <div class="cf-name">📄 src/routes/tags.ts</div>
+      <div class="cf-name">📄 src/router/routes/userRouter.ts</div>
       <span class="lt lt-ts">TypeScript</span>
       <button class="copy-btn" onclick="cp(this)">Copier</button>
     </div>
     <pre class="code-block"><code><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">"express"</span>
-<span class="kw">import</span> { TagController } <span class="kw">from</span> <span class="str">"../controllers/tag.controller.js"</span>
+<span class="kw">import</span> { UserController } <span class="kw">from</span> <span class="str">"../../controllers/user.controller.js"</span>
+<span class="kw">import</span> { validate }        <span class="kw">from</span> <span class="str">"../../middleware/validate.js"</span>
+<span class="kw">import</span> { createUserSchema, updateUserSchema } <span class="kw">from</span> <span class="str">"../../schemas/user.schema.js"</span>
 
-<span class="kw">export const</span> tagsRouter = Router()
+<span class="kw">export const</span> userRouter = Router()
 
-<span class="cmt">// GET    /api/tags      → tous les tags avec leur nb de posts</span>
-<span class="cmt">// GET    /api/tags/:id  → un tag avec ses posts</span>
-<span class="cmt">// POST   /api/tags      → créer un tag</span>
-<span class="cmt">// PATCH  /api/tags/:id  → renommer</span>
-<span class="cmt">// DELETE /api/tags/:id  → supprimer</span>
+userRouter.get   (<span class="str">"/"</span>,    UserController.getAll)
+userRouter.get   (<span class="str">"/:id"</span>, UserController.getOne)
+userRouter.post  (<span class="str">"/"</span>,    validate(createUserSchema), UserController.create)
+userRouter.patch (<span class="str">"/:id"</span>, validate(updateUserSchema), UserController.update)
+userRouter.delete(<span class="str">"/:id"</span>, UserController.remove)</code></pre>
+  </div>
 
-tagsRouter.get   (<span class="str">"/"</span>,    TagController.getAll)
-tagsRouter.get   (<span class="str">"/:id"</span>, TagController.getOne)
-tagsRouter.post  (<span class="str">"/"</span>,    TagController.create)
-tagsRouter.patch (<span class="str">"/:id"</span>, TagController.update)
-tagsRouter.delete(<span class="str">"/:id"</span>, TagController.remove)</code></pre>
+  <h3 class="sub">router/routes/postRouter.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/router/routes/postRouter.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { PostController } <span class="kw">from</span> <span class="str">"../../controllers/post.controller.js"</span>
+<span class="kw">import</span> { validate }        <span class="kw">from</span> <span class="str">"../../middleware/validate.js"</span>
+<span class="kw">import</span> { createPostSchema, updatePostSchema } <span class="kw">from</span> <span class="str">"../../schemas/post.schema.js"</span>
+
+<span class="kw">export const</span> postRouter = Router()
+
+postRouter.get   (<span class="str">"/"</span>,    PostController.getAll)
+postRouter.get   (<span class="str">"/:id"</span>, PostController.getOne)
+postRouter.post  (<span class="str">"/"</span>,    validate(createPostSchema), PostController.create)
+postRouter.patch (<span class="str">"/:id"</span>, validate(updatePostSchema), PostController.update)
+postRouter.delete(<span class="str">"/:id"</span>, PostController.remove)</code></pre>
+  </div>
+
+  <h3 class="sub">router/routes/tagRouter.ts</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/router/routes/tagRouter.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { TagController } <span class="kw">from</span> <span class="str">"../../controllers/tag.controller.js"</span>
+<span class="kw">import</span> { validate }       <span class="kw">from</span> <span class="str">"../../middleware/validate.js"</span>
+<span class="kw">import</span> { createTagSchema, updateTagSchema } <span class="kw">from</span> <span class="str">"../../schemas/tag.schema.js"</span>
+
+<span class="kw">export const</span> tagRouter = Router()
+
+tagRouter.get   (<span class="str">"/"</span>,    TagController.getAll)
+tagRouter.get   (<span class="str">"/:id"</span>, TagController.getOne)
+tagRouter.post  (<span class="str">"/"</span>,    validate(createTagSchema), TagController.create)
+tagRouter.patch (<span class="str">"/:id"</span>, validate(updateTagSchema), TagController.update)
+tagRouter.delete(<span class="str">"/:id"</span>, TagController.remove)</code></pre>
+  </div>
+
+  <h3 class="sub">router/routes/index.ts — barrel export</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/router/routes/index.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt">// Re-exporte tous les routers depuis un seul fichier</span>
+<span class="kw">export</span> { userRouter } <span class="kw">from</span> <span class="str">"./userRouter.js"</span>
+<span class="kw">export</span> { postRouter } <span class="kw">from</span> <span class="str">"./postRouter.js"</span>
+<span class="kw">export</span> { tagRouter }  <span class="kw">from</span> <span class="str">"./tagRouter.js"</span>
+
+<span class="cmt">// Ajouter chaque nouvelle ressource :</span>
+<span class="cmt">// export { authRouter } from "./authRouter.js"</span></code></pre>
   </div>
 
   <div class="tbl-wrap">
     <table>
-      <thead><tr><th>Méthode</th><th>URL</th><th>Action</th><th>HTTP</th></tr></thead>
+      <thead><tr><th>Méthode</th><th>URL</th><th>Validation</th><th>HTTP</th></tr></thead>
       <tbody>
-        <tr><td><code>GET</code></td><td><code>/api/users</code></td><td>Liste paginée</td><td>200</td></tr>
-        <tr><td><code>GET</code></td><td><code>/api/users/:id</code></td><td>Un utilisateur + ses posts</td><td>200 / 404</td></tr>
-        <tr><td><code>POST</code></td><td><code>/api/users</code></td><td>Créer un utilisateur</td><td>201 / 400 / 409</td></tr>
-        <tr><td><code>PATCH</code></td><td><code>/api/users/:id</code></td><td>Modifier le nom</td><td>200 / 404</td></tr>
-        <tr><td><code>DELETE</code></td><td><code>/api/users/:id</code></td><td>Supprimer</td><td>204 / 404</td></tr>
-        <tr><td><code>GET</code></td><td><code>/api/posts?published=true</code></td><td>Posts filtrés</td><td>200</td></tr>
-        <tr><td><code>POST</code></td><td><code>/api/posts</code></td><td>Créer post + lier tags</td><td>201</td></tr>
-        <tr><td><code>PATCH</code></td><td><code>/api/posts/:id</code></td><td>Modifier + mettre à jour tags</td><td>200</td></tr>
-        <tr><td><code>GET</code></td><td><code>/api/tags</code></td><td>Tous les tags + nb posts</td><td>200</td></tr>
-        <tr><td><code>POST</code></td><td><code>/api/tags</code></td><td>Créer un tag</td><td>201 / 409</td></tr>
+        <tr><td><code>GET</code></td><td><code>/api/users</code></td><td>—</td><td>200</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/users</code></td><td><code>createUserSchema</code></td><td>201 / 400</td></tr>
+        <tr><td><code>PATCH</code></td><td><code>/api/users/:id</code></td><td><code>updateUserSchema</code></td><td>200 / 400 / 404</td></tr>
+        <tr><td><code>DELETE</code></td><td><code>/api/users/:id</code></td><td>—</td><td>204 / 404</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/posts</code></td><td><code>createPostSchema</code></td><td>201 / 400</td></tr>
+        <tr><td><code>PATCH</code></td><td><code>/api/posts/:id</code></td><td><code>updatePostSchema</code></td><td>200 / 400 / 404</td></tr>
+        <tr><td><code>POST</code></td><td><code>/api/tags</code></td><td><code>createTagSchema</code></td><td>201 / 400 / 409</td></tr>
+        <tr><td><code>PATCH</code></td><td><code>/api/tags/:id</code></td><td><code>updateTagSchema</code></td><td>200 / 400 / 404</td></tr>
       </tbody>
     </table>
   </div>
 </section>
 
-<!-- ═══ 15 — ERREURS ═══ -->
+<!-- ═══ 17 — ROUTER ═══ -->
+<section class="step-section" id="router">
+  <div class="step-header">
+    <div class="step-badge"><span class="step-num">17</span></div>
+    <div>
+      <div class="step-title">Router central — index.ts</div>
+      <div class="step-subtitle">Un seul import, tous les préfixes /api/* au même endroit</div>
+    </div>
+  </div>
+
+  <p class="prose">
+    Le <code>router/index.ts</code> importe tous les sous-routers depuis le barrel et les monte avec leurs préfixes.
+    Le <code>server.ts</code> ne monte que ce router — il ne connaît plus les ressources individuellement.
+  </p>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/router/index.ts</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { Router } <span class="kw">from</span> <span class="str">"express"</span>
+<span class="kw">import</span> { userRouter, postRouter, tagRouter } <span class="kw">from</span> <span class="str">"./routes/index.js"</span>
+
+<span class="kw">export const</span> router = Router()
+
+<span class="cmt">// Tous les préfixes /api/* sont définis ici et nulle part ailleurs</span>
+router.use(<span class="str">"/api/users"</span>, userRouter)
+router.use(<span class="str">"/api/posts"</span>, postRouter)
+router.use(<span class="str">"/api/tags"</span>,  tagRouter)
+
+<span class="cmt">// Ajouter chaque nouvelle ressource ici :</span>
+<span class="cmt">// router.use("/api/auth", authRouter)</span></code></pre>
+  </div>
+
+  <p class="prose">Le <code>server.ts</code> ne change pas — il monte toujours <code>router</code> en une ligne :</p>
+
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 src/server.ts — extrait (inchangé)</div>
+      <span class="lt lt-ts">TypeScript</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="kw">import</span> { router } <span class="kw">from</span> <span class="str">"./router/index.js"</span>
+
+<span class="cmt">// server.ts ne connaît pas userRouter, postRouter… seulement router</span>
+server.use(router)</code></pre>
+  </div>
+
+  <h3 class="sub">Créer tous les dossiers en une commande</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📟 Terminal</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code>mkdir -p src/config src/lib src/router/routes src/models src/schemas src/controllers src/middleware</code></pre>
+  </div>
+
+  <div class="tbl-wrap">
+    <table>
+      <thead><tr><th>Ajouter une ressource (ex: Auth)</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td>1. Model</td><td><code>src/models/auth.model.ts</code></td></tr>
+        <tr><td>2. Schemas Zod</td><td><code>src/schemas/auth.schema.ts</code></td></tr>
+        <tr><td>3. Controller</td><td><code>src/controllers/auth.controller.ts</code></td></tr>
+        <tr><td>4. Router</td><td><code>src/router/routes/authRouter.ts</code></td></tr>
+        <tr><td>5. Barrel</td><td><code>src/router/routes/index.ts</code> → <code>export { authRouter }</code></td></tr>
+        <tr><td>6. Préfixe</td><td><code>src/router/index.ts</code> → <code>router.use("/api/auth", authRouter)</code></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="sub">Flux complet d'une requête</h3>
+  <div class="cf">
+    <div class="cf-header">
+      <div class="cf-name">📄 POST /api/posts — de l'HTTP à MySQL</div>
+      <span class="lt lt-bash">bash</span>
+      <button class="copy-btn" onclick="cp(this)">Copier</button>
+    </div>
+    <pre class="code-block"><code><span class="cmt">POST /api/posts { title, slug, authorId, tagIds }</span>
+  │
+  ▼
+<span class="cmt">src/server.ts</span>                    → cors, json, cookieParser
+  │                                 → server.use(router)
+  ▼
+<span class="cmt">src/router/index.ts</span>              → router.use("/api/posts", postRouter)
+  │
+  ▼
+<span class="cmt">src/router/routes/postRouter.ts</span>  → validate(createPostSchema) ← s'arrête ici si invalide
+  │                                 → PostController.create
+  ▼
+<span class="cmt">src/controllers/post.controller.ts</span>
+  │  req.body déjà typé CreatePostInput
+  │  appelle PostModel.create(req.body)
+  ▼
+<span class="cmt">src/models/post.model.ts</span>         → prisma.post.create({ data, include })
+  │
+  ▼
+<span class="cmt">MySQL</span>                            → INSERT INTO posts ...
+  │
+  ◄ données remontent
+  │
+<span class="cmt">src/server.ts</span>                    → res.status(201).json(post)</code></pre>
+  </div>
+</section>
+
+<!-- ═══ 18 — ERREURS ═══ -->
 <section class="step-section" id="errors">
   <div class="step-header">
-    <div class="step-badge"><span class="step-num">15</span></div>
+    <div class="step-badge"><span class="step-num">18</span></div>
     <div>
       <div class="step-title">Gestion des erreurs Prisma</div>
       <div class="step-subtitle">Intercepter les erreurs typées et retourner les bons codes HTTP</div>
@@ -2380,10 +2916,10 @@ tagsRouter.delete(<span class="str">"/:id"</span>, TagController.remove)</code><
   </div>
 </section>
 
-<!-- ═══ 16 — STUDIO ═══ -->
+<!-- ═══ 19 — STUDIO ═══ -->
 <section class="step-section" id="studio">
   <div class="step-header">
-    <div class="step-badge"><span class="step-num">16</span></div>
+    <div class="step-badge"><span class="step-num">19</span></div>
     <div>
       <div class="step-title">Prisma Studio</div>
       <div class="step-subtitle">Interface graphique pour explorer et modifier la base</div>
@@ -2406,10 +2942,10 @@ tagsRouter.delete(<span class="str">"/:id"</span>, TagController.remove)</code><
   </p>
 </section>
 
-<!-- ═══ 17 — BONNES PRATIQUES ═══ -->
+<!-- ═══ 20 — BONNES PRATIQUES ═══ -->
 <section class="step-section" id="tips">
   <div class="step-header">
-    <div class="step-badge"><span class="step-num">17</span></div>
+    <div class="step-badge"><span class="step-num">20</span></div>
     <div>
       <div class="step-title">Bonnes pratiques</div>
       <div class="step-subtitle">Sécurité, performance et maintenabilité</div>
@@ -2463,21 +2999,21 @@ npm install @types/express --save-dev
 npx prisma init --datasource-provider mysql --output ../generated/prisma
 
 <span class="cmt"># 4. Activer ESM dans package.json : ajouter "type": "module"</span>
-<span class="cmt"># 5. Mettre à jour tsconfig.json (module: ESNext, lib: ES2023, types: node…)</span>
+<span class="cmt"># 5. Mettre à jour tsconfig.json (module: NodeNext, moduleResolution: NodeNext, lib: ES2023, types: node…)</span>
 <span class="cmt"># 6. Remplir .env avec tes credentials MySQL</span>
 <span class="cmt"># 7. Écrire tes modèles dans prisma/schema.prisma</span>
 
 <span class="cmt"># 8. Créer les tables + générer le client TypeScript</span>
 npx prisma migrate dev --name init
 
-<span class="cmt"># 9. Créer l'arborescence MVC</span>
-mkdir -p src/lib src/models src/controllers src/routes src/middleware
+<span class="cmt"># 9. Créer l'arborescence complète</span>
+mkdir -p src/config src/router/routes src/models src/controllers src/routes src/middleware src/lib
 
 <span class="cmt"># 10. Tester avec un script</span>
 npx tsx script.ts
 
 <span class="cmt"># 11. Démarrer le serveur Express</span>
-npm run dev   <span class="cmt"># → tsx watch src/index.ts</span>
+npm run dev   <span class="cmt"># → tsx watch src/server.ts</span>
 
 <span class="cmt"># 12. (Optionnel) Interface visuelle de la base</span>
 npx prisma studio
@@ -2500,7 +3036,7 @@ npx prisma studio
 </main>
 </div>
 
-<script>
+<script type="text/javascript">
 // Scroll spy
 const stepSections = document.querySelectorAll('.step-section')
 const navItems = document.querySelectorAll('.nav-item')
