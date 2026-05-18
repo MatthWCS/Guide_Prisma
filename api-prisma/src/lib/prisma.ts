@@ -18,6 +18,7 @@ const adapter = new PrismaMariaDb({
     database: requireEnv("DATABASE_NAME"),
     port: Number(process.env.DATABASE_PORT) || 3307,
     connectionLimit: 5,   // max connexions simultanées dans le pool
+    allowPublicKeyRetrieval: true, // nécessaire pour MySQL 8+ avec auth caching_sha2_password
 })
 
 // ── Prisma Client : API de requêtes TypeScript ───────────────────
