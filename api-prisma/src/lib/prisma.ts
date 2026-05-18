@@ -1,22 +1,14 @@
-import "dotenv/config"
 import { PrismaMariaDb } from "@prisma/adapter-mariadb"
 import { PrismaClient } from "../../generated/prisma/client.js"
-
-// Validation des variables d'env au démarrage
-// Évite les erreurs silencieuses : si une var manque, on le sait immédiatement
-function requireEnv(key: string): string {
-    const value = process.env[key]
-    if (!value) throw new Error(`Variable manquante dans .env : ${key}`)
-    return value
-}
+import { env } from "../config/env.js"
 
 // ── Driver Adapter : gère la connexion TCP avec MySQL ────────────
 const adapter = new PrismaMariaDb({
-    host: requireEnv("DATABASE_HOST"),
-    user: requireEnv("DATABASE_USER"),
-    password: requireEnv("DATABASE_PASSWORD"),
-    database: requireEnv("DATABASE_NAME"),
-    port: Number(process.env.DATABASE_PORT) || 3307,
+    host: env.db.host,
+    user: env.db.user,
+    password: env.db.password,
+    database: env.db.name,
+    port: env.db.port,
     connectionLimit: 5,   // max connexions simultanées dans le pool
     allowPublicKeyRetrieval: true, // nécessaire pour MySQL 8+ avec auth caching_sha2_password
 })
